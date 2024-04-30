@@ -29,9 +29,3 @@ void ATurretPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-void ATurretPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
