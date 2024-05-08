@@ -6,7 +6,6 @@
 #include "Components/StaticMeshComponent.h"
 #include "TurretPawn.generated.h"
 
-
 UCLASS()
 class PART_3_API ATurretPawn : public APawn
 {
@@ -32,5 +31,24 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USceneComponent> ProjectileSpawnPoint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetSlotNames"), Category = "Team Color")
+	FName MaterialSlotName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetMaterialParametrs"), Category = "Team Color")
+	FName MaterialParametrs;
+
+	UFUNCTION()
+	TArray<FString> GetMaterialParametrs() const;
+
+	UFUNCTION()
+	TArray<FName> GetSlotNames() const;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
+	FLinearColor MaterialColor;
+
 	virtual void Tick(float DeltaTime) override;
+
+protected:
+
+	virtual void PostInitializeComponents() override;
 };
