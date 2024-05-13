@@ -6,9 +6,6 @@
 #include "TurretPawn.h"
 #include "TankPawn.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class PART_3_API ATankPawn : public ATurretPawn
 {
