@@ -1,6 +1,6 @@
 
-#include "TankPawn.h"
 #include "GameModeBaseFox.h"
+#include "TankPawn.h"
 
 AGameModeBaseFox::AGameModeBaseFox()
 {

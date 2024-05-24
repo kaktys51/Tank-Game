@@ -38,11 +38,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetMaterialParametrs"), Category = "Team Color")
 	FName MaterialParametrs;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float TurretRotationAcceleration = 2.f;
+
 	UFUNCTION()
 	TArray<FString> GetMaterialParametrs() const;
 
 	UFUNCTION()
 	TArray<FName> GetSlotNames() const;
+
+	UFUNCTION()
+	void TurretRotationToCursor();
+
+	UFUNCTION()
+	void RotateTurret(FVector LookAtTarget);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
