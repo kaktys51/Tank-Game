@@ -12,14 +12,17 @@ ATankPawn::ATankPawn()
 
 void ATankPawn::Move(float Amount)
 {
-	FVector ForvardVector = CapsuleComponent->GetForwardVector();
-	
-	CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
+	if (CapsuleComponent)
+	{
+		FVector ForvardVector = CapsuleComponent->GetForwardVector();
 
-	UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
-	CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
+		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
 
-	bMoveInputActive = true;
+		UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
+		CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
+
+		bMoveInputActive = true;
+	}
 }
 
 void ATankPawn::Turn(float Amount)
@@ -53,19 +56,16 @@ void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!bMoveInputActive && CurrentMoveAmount != 0.f)
+	if (!bMoveInputActive && FMath::Abs(CurrentMoveAmount) > 0.1f)
 	{
 		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, 0.0f, DeltaTime, AccelerationDuration);
-		UE_LOG(LogTemp, Warning, TEXT(" CurrentMoveAmount: %f, Interpolating to zero"), CurrentMoveAmount);
 	}
 	bMoveInputActive = false;
 
 
-	if (!bTurnInputActive && CurrentTurnAmount != 0.f)
+	if (!bTurnInputActive && FMath::Abs(CurrentTurnAmount) != 0.1f)
 	{
 		CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, 0.f, DeltaTime, RotationAccelerationDuration);
-		UE_LOG(LogTemp, Warning, TEXT(" CurrentTurnAmount: %f, Interpolating to zero"), CurrentTurnAmount);
 	}
-
 	bTurnInputActive = false;
 }

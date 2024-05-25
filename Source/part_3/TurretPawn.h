@@ -51,7 +51,7 @@ public:
 	void TurretRotationToCursor();
 
 	UFUNCTION()
-	void RotateTurret(FVector LookAtTarget);
+	void RotateTurret(const FVector& LookAtTarget);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
