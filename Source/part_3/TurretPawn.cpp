@@ -47,10 +47,38 @@ TArray<FName> ATurretPawn::GetSlotNames() const
 	return BaseMaterialSlotNames;
 }
 
+void ATurretPawn::TurretRotationToCursor()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		FHitResult HitResult;
+		if (PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
+		{
+			FVector HitLocation = HitResult.ImpactPoint;
+			RotateTurret(HitLocation);
+			DrawDebugSphere(GetWorld(), HitLocation, 70.f, 12, FColor::Red);
+		}
+	}
+}
+
+void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
+{
+	if (TurretMesh)
+	{
+		FVector ToTarget = LookAtTarget - TurretMesh->GetComponentLocation();
+		FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f); // -90.f - adjust for turret position 
+		FRotator NewLookRotation = FMath::RInterpTo(TurretMesh->GetComponentRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
+		TurretMesh->SetWorldRotation(NewLookRotation);
+	}
+}
+
+
+
 void ATurretPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	TurretRotationToCursor();
 }
 
 void ATurretPawn::PostInitializeComponents()
