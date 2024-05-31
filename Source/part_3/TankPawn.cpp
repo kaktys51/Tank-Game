@@ -18,7 +18,7 @@ void ATankPawn::Move(float Amount)
 
 		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
 
-		UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
+		//UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
 		CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
 
 		bMoveInputActive = true;
@@ -30,7 +30,7 @@ void ATankPawn::Turn(float Amount)
 	CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, Amount, GetWorld()->GetDeltaSeconds(), RotationAccelerationDuration);
 
 	FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
-	UE_LOG(LogTemp, Warning, TEXT("Rotation: %f, CurAmount: %f"), Rotation.Yaw, CurrentTurnAmount);
+	//UE_LOG(LogTemp, Warning, TEXT("Rotation: %f, CurAmount: %f"), Rotation.Yaw, CurrentTurnAmount);
 	AddActorLocalRotation(Rotation);
 
 	bTurnInputActive = true;
@@ -43,7 +43,7 @@ void ATankPawn::Look(const FInputActionValue& Amount)
 	{
 		AddControllerYawInput(LookAxisValue.X);
 		AddControllerPitchInput(LookAxisValue.Y);
-		UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), LookAxisValue.X, LookAxisValue.Y);
+		//UE_LOG(LogTemp, Warning, TEXT("x: %f, y: %f"), LookAxisValue.X, LookAxisValue.Y);
 	}
 }
 
