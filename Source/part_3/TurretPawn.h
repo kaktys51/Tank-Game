@@ -4,6 +4,8 @@
 #include "GameFramework/Pawn.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/ArrowComponent.h"
+#include "Components/SceneComponent.h"
 #include "TurretPawn.generated.h"
 
 
@@ -30,7 +32,7 @@ public:
 	TObjectPtr<UStaticMeshComponent> TurretMesh;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
-	TObjectPtr<USceneComponent> ProjectileSpawnPoint;
+	TObjectPtr<USceneComponent> ProjectileSpawnPointFox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetSlotNames"), Category = "Team Color")
 	FName MaterialSlotName;

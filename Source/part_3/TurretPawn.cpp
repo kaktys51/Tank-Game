@@ -14,8 +14,9 @@ ATurretPawn::ATurretPawn()
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TurretMesh"));
 	TurretMesh->SetupAttachment(CapsuleComponent);
 
-	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
-	ProjectileSpawnPoint->SetupAttachment(CapsuleComponent);
+	ProjectileSpawnPointFox = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
+	ProjectileSpawnPointFox->SetupAttachment(TurretMesh);
+	//ProjectileSpawnPointFox->AttachToComponent(TurretMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
 	MaterialColor = FLinearColor(1.0f, 1.0f, 1.0f);
 }
