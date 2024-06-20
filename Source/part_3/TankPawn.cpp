@@ -8,7 +8,6 @@ ATankPawn::ATankPawn() : Super()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
-
 }
 
 void ATankPawn::Move(float Amount)
@@ -53,21 +52,19 @@ void ATankPawn::Fire()
 	UE_LOG(LogTemp, Warning, TEXT("Tank is shooting !"));
 	if (ProjectileClass)
 	{
-		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
-		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
+		if (ProjectileSpawnPointFox)
+		{
+			FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+			FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+		}
 	}
 }
 
 void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (IsNetMode(NM_Client))
-	{
-		FVector ProjetileSpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
-		DrawDebugSphere(GetWorld(), ProjetileSpawnLocation, 70.f, 12, FColor::Yellow);
-	}
 
 	FVector ProjetileSpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 	DrawDebugSphere(GetWorld(), ProjetileSpawnLocation, 70.f, 12, FColor::Red);

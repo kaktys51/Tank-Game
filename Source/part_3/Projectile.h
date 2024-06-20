@@ -17,7 +17,6 @@ public:
 	AProjectile();
 
 protected:
-	virtual void BeginPlay() override;
 
 public:	
 

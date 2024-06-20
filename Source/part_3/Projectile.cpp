@@ -18,12 +18,6 @@ AProjectile::AProjectile()
 	ProjectileMovement->UpdatedComponent = ProjectileMesh;
 }
 
-void AProjectile::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
