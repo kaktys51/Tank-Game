@@ -50,15 +50,12 @@ void ATankPawn::Look(const FInputActionValue& Amount)
 void ATankPawn::Fire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Tank is shooting !"));
-	if (ProjectileClass)
+	if (ProjectileClass && ProjectileSpawnPointFox)
 	{
-		if (ProjectileSpawnPointFox)
-		{
-			FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
-			FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
+		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
-			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
-		}
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
 	}
 }
 
