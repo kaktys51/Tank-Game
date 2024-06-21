@@ -14,10 +14,4 @@ class PART_3_API AGameModeBaseFox : public AGameModeBase
 
 public:
 	AGameModeBaseFox();
-
-	UPROPERTY(EditDefaultsOnly, Category = "Default")
-	TSubclassOf<ATankPawn> TankPawn;
-
-protected:
 };
-

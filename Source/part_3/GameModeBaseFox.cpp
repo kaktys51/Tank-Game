@@ -5,9 +5,6 @@
 
 AGameModeBaseFox::AGameModeBaseFox()
 {
-	DefaultPawnClass = ATankPawn::StaticClass();
+	DefaultPawnClass = nullptr;
 
 }
-
-
-
