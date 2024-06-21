@@ -1,7 +1,7 @@
 
 #include "TankPawn.h"
 
-ATankPawn::ATankPawn()
+ATankPawn::ATankPawn() : Super()
 {
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(CapsuleComponent);
@@ -49,12 +49,22 @@ void ATankPawn::Look(const FInputActionValue& Amount)
 
 void ATankPawn::Fire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Tank is shooting !"));
+	if (ProjectileClass && ProjectileSpawnPointFox)
+	{
+		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+	}
 }
 
 void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FVector ProjetileSpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+	DrawDebugSphere(GetWorld(), ProjetileSpawnLocation, 70.f, 12, FColor::Red);
 
 	if (!bMoveInputActive && FMath::Abs(CurrentMoveAmount) > 0.1f)
 	{
@@ -62,10 +72,9 @@ void ATankPawn::Tick(float DeltaTime)
 	}
 	bMoveInputActive = false;
 
-
 	if (!bTurnInputActive && FMath::Abs(CurrentTurnAmount) != 0.1f)
 	{
-		CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, 0.f, DeltaTime, RotationAccelerationDuration);
+		CurrentTurnAmount = 0.f;
 	}
 	bTurnInputActive = false;
 }

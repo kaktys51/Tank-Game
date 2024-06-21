@@ -5,6 +5,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameModeBaseFox.generated.h"
 
+class ATankPawn;
 
 UCLASS()
 class PART_3_API AGameModeBaseFox : public AGameModeBase
@@ -14,4 +15,3 @@ class PART_3_API AGameModeBaseFox : public AGameModeBase
 public:
 	AGameModeBaseFox();
 };
-

@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "TurretPawn.h"
+#include "Projectile.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "InputActionValue.h"
@@ -52,6 +53,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Fire();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TSubclassOf<AProjectile> ProjectileClass;
 
 	virtual void Tick(float DeltaTime) override;
 };
