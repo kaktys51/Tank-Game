@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "TurretPawn.h"
 #include "Projectile.h"
+#include "HealthComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "InputActionValue.h"
@@ -32,6 +33,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float AccelerationForce = 1000.f;

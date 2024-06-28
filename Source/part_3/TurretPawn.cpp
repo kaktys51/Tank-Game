@@ -19,6 +19,7 @@ ATurretPawn::ATurretPawn()
 	//ProjectileSpawnPointFox->AttachToComponent(TurretMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
 	MaterialColor = FLinearColor(1.0f, 1.0f, 1.0f);
+
 }
 
 void ATurretPawn::BeginPlay()

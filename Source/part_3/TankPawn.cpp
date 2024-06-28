@@ -8,6 +8,10 @@ ATankPawn::ATankPawn() : Super()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	//SetCanBeDamaged(true);
 }
 
 void ATankPawn::Move(float Amount)

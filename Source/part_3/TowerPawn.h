@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "TurretPawn.h"
+#include "HealthComponent.h"
 #include "Components/SphereComponent.h"
 #include "TowerPawn.generated.h"
 
@@ -33,6 +34,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USphereComponent> DetectionSphere;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UHealthComponent* HealthComponent;
 
 	UFUNCTION(BlueprintCallable, Category = "Tower Actions")
 	void Fire();

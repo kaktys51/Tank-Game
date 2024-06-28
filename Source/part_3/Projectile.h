@@ -29,6 +29,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float DamageValue;
+
 
 	virtual void Tick(float DeltaTime) override;
 
