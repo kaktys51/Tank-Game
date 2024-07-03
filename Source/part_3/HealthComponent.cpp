@@ -34,7 +34,10 @@ void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, c
 
 	if (CurrentHealth <= 0.f)
 	{
-		GetOwner()->Destroy();
+		if (GetOwner())
+		{
+			GetOwner()->Destroy();
+		}
 	}
 }
 
@@ -49,6 +52,9 @@ void UHealthComponent::TakeDamage(float Damage)
 
 	if (CurrentHealth <= 0.0f)
 	{
-		GetOwner()->Destroy();
+		if (GetOwner())
+		{
+			GetOwner()->Destroy();
+		}
 	}
 }
