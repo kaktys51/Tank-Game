@@ -1,5 +1,6 @@
 
 #include "Projectile.h"
+#include "HealthComponent.h"
 
 AProjectile::AProjectile()
 {
@@ -16,6 +17,8 @@ AProjectile::AProjectile()
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->UpdatedComponent = ProjectileMesh;
+
+	DamageValue = 20.f;
 }
 
 void AProjectile::Tick(float DeltaTime)
@@ -29,6 +32,14 @@ void AProjectile::OnComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 	if (OtherActor && OtherActor != this && OtherComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Projectile hit: %s"), *OtherActor->GetName());
+
+		UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
+		{
+			if (HealthComponent)
+			{
+				HealthComponent->TakeDamage(DamageValue);
+			}
+		}
 		Destroy();
 	}
 }
