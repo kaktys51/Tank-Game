@@ -14,4 +14,37 @@ class PART_3_API AGameModeBaseFox : public AGameModeBase
 
 public:
 	AGameModeBaseFox();
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Settings")
+	float RestartDelay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Rules")
+	int32 WinScore;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Rules")
+	int32 CurrentScore;
+
+private:
+
+	FTimerHandle RestartTimerHandle;
+
+	void RestartGameWithTimer(float Delay);
+
+	void RestartGame();
+
+public:
+
+	UFUNCTION()
+	void AddScore(int32 Amount);
+
+	UFUNCTION()
+	void LoseGame();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Events")
+	void GameLose();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Events")
+	void GameWin();
 };
