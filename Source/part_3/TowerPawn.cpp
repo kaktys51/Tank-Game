@@ -37,10 +37,20 @@ void ATowerPawn::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 void ATowerPawn::Fire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Tower is shooting at player!"));
+
+	if (ProjectileClass && ProjectileSpawnPointFox)
+	{
+		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
+
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+	}
 }
 
 void ATowerPawn::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
+
 	if (TargetRef)
 	{
 		FVector TargetLocation = TargetRef->GetActorLocation();

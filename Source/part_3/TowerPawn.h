@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "TurretPawn.h"
+#include "Projectile.h"
 #include "Components/SphereComponent.h"
 #include "TowerPawn.generated.h"
 
@@ -36,6 +37,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Tower Actions")
 	void Fire();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TSubclassOf<AProjectile> ProjectileClass;
 
 	FTimerHandle ShootingTimer;
 
