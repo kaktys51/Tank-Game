@@ -17,6 +17,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	AActor* ComponentOwner;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth;
 
