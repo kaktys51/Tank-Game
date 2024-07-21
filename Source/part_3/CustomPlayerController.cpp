@@ -15,7 +15,7 @@ void ACustomPlayerController::SetPlayerEnabledState(bool bPlayerEnabled)
 	{
 		if (GetPawn())
 		{
-			GetPawn()->EnableInput(this);
+			GetPawn()->DisableInput(this);
 		}
 	}
 }
