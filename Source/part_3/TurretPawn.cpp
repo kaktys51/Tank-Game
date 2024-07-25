@@ -80,7 +80,6 @@ void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
 void ATurretPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TurretRotationToCursor();
 }
 
 void ATurretPawn::PostInitializeComponents()

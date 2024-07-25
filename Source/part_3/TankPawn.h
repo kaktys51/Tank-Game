@@ -25,6 +25,9 @@ protected:
 	bool bMoveInputActive = false;
 	bool bTurnInputActive = false;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bTurretToCursorState;
+
 public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
@@ -53,6 +56,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Fire();
+
+	//Disables or enables turret rotation to cursor
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void SetTurretRotationToCursorState(bool bInputState);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AProjectile> ProjectileClass;
