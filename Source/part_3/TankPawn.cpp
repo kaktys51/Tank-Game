@@ -8,6 +8,8 @@ ATankPawn::ATankPawn() : Super()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	bTurretToCursorState = true;
 }
 
 void ATankPawn::Move(float Amount)
@@ -59,9 +61,20 @@ void ATankPawn::Fire()
 	}
 }
 
+//Disables or enables turret rotation to cursor
+void ATankPawn::SetTurretRotationToCursorState(bool bInputState)
+{
+	bTurretToCursorState = bInputState;
+}
+
 void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bTurretToCursorState)
+	{
+		TurretRotationToCursor();
+	}
 
 	FVector ProjetileSpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 	DrawDebugSphere(GetWorld(), ProjetileSpawnLocation, 70.f, 12, FColor::Red);

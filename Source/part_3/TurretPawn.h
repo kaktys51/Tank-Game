@@ -52,7 +52,7 @@ public:
 
 	UFUNCTION()
 	TArray<FName> GetSlotNames() const;
-
+	
 	UFUNCTION()
 	void TurretRotationToCursor();
 
