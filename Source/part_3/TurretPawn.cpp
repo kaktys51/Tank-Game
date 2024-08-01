@@ -1,5 +1,7 @@
 
 #include "TurretPawn.h"
+#include "TankPawn.h"
+
 
 ATurretPawn::ATurretPawn()
 {
@@ -25,7 +27,7 @@ ATurretPawn::ATurretPawn()
 void ATurretPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 TArray<FString> ATurretPawn::GetMaterialParametrs() const
@@ -73,6 +75,30 @@ void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
 		FRotator NewLookRotation = FMath::RInterpTo(TurretMesh->GetComponentRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
 		TurretMesh->SetWorldRotation(NewLookRotation);
 	}
+}
+
+void ATurretPawn::HandleDeath()
+{
+	BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TurretMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	FVector CurrentLocation = GetActorLocation();
+	FRotator CurrentRotation = FRotator::ZeroRotator;
+	if (DestroyedClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		ADestroyedPawn* DestroyedPawn = GetWorld()->SpawnActor<ADestroyedPawn>(DestroyedClass, CurrentLocation, CurrentRotation, SpawnParams);
+		if (BaseMesh && TurretMesh)
+		{
+			DestroyedPawn->SetBasePosition(BaseMesh->GetComponentTransform());
+			DestroyedPawn->SetTurretPosition(TurretMesh->GetComponentTransform());
+		}
+	}
+
+	Destroy();
 }
 
 
