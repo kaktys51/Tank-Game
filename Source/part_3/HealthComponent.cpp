@@ -58,35 +58,35 @@ void UHealthComponent::TakeDamage(float Damage)
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
 
-	if (CurrentHealth <= 0.0f)
+	if (CurrentHealth > 0.0f) return;
+
+	if (ComponentOwner->IsA<ATankPawn>())
 	{
-		if (ComponentOwner->IsA<ATankPawn>())
+		ATankPawn* TankPawn = Cast<ATankPawn>(ComponentOwner);
+		if (TankPawn)
 		{
-			ATankPawn* TankPawn = Cast<ATankPawn>(ComponentOwner);
-			if (TankPawn)
+			AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
+			if (GameMode)
 			{
-				AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
-				if (GameMode)
-				{
-					GameMode->LoseGame();
-					TankPawn->HandleDeath();
-				}
+				GameMode->LoseGame();
+				TankPawn->HandleDeath();
 			}
-		}
-		else if (ComponentOwner->IsA<ATowerPawn>())
-		{
-			ATowerPawn* TowerPawn = Cast<ATowerPawn>(ComponentOwner);
-			if (TowerPawn)
-			{
-				AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
-				if (GameMode)
-				{
-					GameMode->AddScore(1);
-					TowerPawn->HandleDeath();
-				}
-
-			}
-
 		}
 	}
+	else if (ComponentOwner->IsA<ATowerPawn>())
+	{
+		ATowerPawn* TowerPawn = Cast<ATowerPawn>(ComponentOwner);
+		if (TowerPawn)
+		{
+			AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
+			if (GameMode)
+			{
+				GameMode->AddScore();
+				TowerPawn->HandleDeath();
+			}
+
+		}
+
+	}
+
 }

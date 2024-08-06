@@ -79,22 +79,25 @@ void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
 
 void ATurretPawn::HandleDeath()
 {
-	BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	TurretMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	FVector CurrentLocation = GetActorLocation();
-	FRotator CurrentRotation = FRotator::ZeroRotator;
-	if (DestroyedClass)
+	if (BaseMesh && TurretMesh && CapsuleComponent)
 	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		TurretMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		ADestroyedPawn* DestroyedPawn = GetWorld()->SpawnActor<ADestroyedPawn>(DestroyedClass, CurrentLocation, CurrentRotation, SpawnParams);
-		if (BaseMesh && TurretMesh)
+		FVector CurrentLocation = GetActorLocation();
+		FRotator CurrentRotation = FRotator::ZeroRotator;
+		if (DestroyedClass)
 		{
-			DestroyedPawn->SetBasePosition(BaseMesh->GetComponentTransform());
-			DestroyedPawn->SetTurretPosition(TurretMesh->GetComponentTransform());
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			ADestroyedPawn* DestroyedPawn = GetWorld()->SpawnActor<ADestroyedPawn>(DestroyedClass, CurrentLocation, CurrentRotation, SpawnParams);
+			if (BaseMesh && TurretMesh && DestroyedPawn)
+			{
+				DestroyedPawn->SetBasePosition(BaseMesh->GetComponentTransform());
+				DestroyedPawn->SetTurretPosition(TurretMesh->GetComponentTransform());
+			}
 		}
 	}
 

@@ -19,6 +19,7 @@ ADestroyedPawn::ADestroyedPawn()
 	MainExplosionLocation->SetupAttachment(RootComponent);
 
 	OffsetMainExplosionLocation = 0.f;
+	TurretOffset = 10.0f;
 }
 
 void ADestroyedPawn::SetMainExplosionLocation()
@@ -32,8 +33,9 @@ void ADestroyedPawn::SetMainExplosionLocation()
 	ACustomPlayerController* CustomPlayerController = Cast<ACustomPlayerController>(PlayerController);
 	if (!CustomPlayerController) return;
 
-	//FVector DestroyedPawnLocation = GetActorLocation();
 	FVector DestroyedPawnLocation = MainExplosionLocation->GetComponentLocation();
+	if (!MainExplosionLocation) return;
+
 	FVector CameraLocation;
 	FRotator CameraRotation;
 	CustomPlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
@@ -48,16 +50,22 @@ void ADestroyedPawn::SetMainExplosionLocation()
 
 void ADestroyedPawn::SetTurretPosition(const FTransform& TurretTransform)
 {
-	TurretMesh->SetWorldTransform(TurretTransform);
+	if (TurretMesh)
+	{
+		TurretMesh->SetWorldTransform(TurretTransform);
 
-	FVector CurrentLocation = TurretMesh->GetComponentLocation();
-	CurrentLocation.Z += 10.f;
-	TurretMesh->SetWorldLocation(CurrentLocation);
+		FVector CurrentLocation = TurretMesh->GetComponentLocation();
+		CurrentLocation.Z += TurretOffset;
+		TurretMesh->SetWorldLocation(CurrentLocation);
+	}
 }
 
 void ADestroyedPawn::SetBasePosition(const FTransform& BaseTransform)
 {
-	BaseMesh->SetWorldTransform(BaseTransform);
+	if (BaseMesh)
+	{
+		BaseMesh->SetWorldTransform(BaseTransform);
+	}
 }
 
 void ADestroyedPawn::BeginPlay()
@@ -65,10 +73,4 @@ void ADestroyedPawn::BeginPlay()
 	Super::BeginPlay();
 
 	SetMainExplosionLocation();
-}
-
-void ADestroyedPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }

@@ -44,6 +44,8 @@ void ATowerPawn::Fire()
 		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
 		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+
+		FireVFX();
 	}
 }
 
