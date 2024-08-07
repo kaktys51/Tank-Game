@@ -26,6 +26,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Rules")
 	int32 CurrentScore;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Rules")
+	int32 ScorePerKill;
+
 private:
 
 	FTimerHandle RestartTimerHandle;
@@ -37,7 +40,7 @@ private:
 public:
 
 	UFUNCTION()
-	void AddScore(int32 Amount);
+	void AddScore();
 
 	UFUNCTION()
 	void LoseGame();

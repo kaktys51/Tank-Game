@@ -38,6 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tower Actions")
 	void Fire();
 
+	//For implementing vfx inside blueprint
+	UFUNCTION(BlueprintImplementableEvent, Category = "VFX")
+	void FireVFX();
+
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AProjectile> ProjectileClass;
 

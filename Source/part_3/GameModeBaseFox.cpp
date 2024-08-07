@@ -11,6 +11,7 @@ AGameModeBaseFox::AGameModeBaseFox()
 	RestartDelay = 5;
 	WinScore = 1;
 	CurrentScore = 0;
+	ScorePerKill = 1;
 }
 
 void AGameModeBaseFox::RestartGameWithTimer(float Delay)
@@ -29,9 +30,9 @@ void AGameModeBaseFox::RestartGame()
 	}
 }
 
-void AGameModeBaseFox::AddScore(int32 Amount)
+void AGameModeBaseFox::AddScore()
 {
-	CurrentScore += Amount;
+	CurrentScore += ScorePerKill;
 
 	if (CurrentScore >= WinScore)
 	{

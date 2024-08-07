@@ -7,8 +7,11 @@
 #include "Components/ArrowComponent.h"
 #include "Components/SceneComponent.h"
 #include "HealthComponent.h"
+#include "DestroyedPawn.h"
 #include "TurretPawn.generated.h"
 
+class ATankPawn;
+class ATowerPawn;
 
 UCLASS()
 class PART_3_API ATurretPawn : public APawn
@@ -61,6 +64,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
+
+	//Destroys the original actor and spawns the destroyed version. 
+	UFUNCTION()
+	void HandleDeath();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Destruction")
+	TSubclassOf<ADestroyedPawn> DestroyedClass;
 
 	virtual void Tick(float DeltaTime) override;
 

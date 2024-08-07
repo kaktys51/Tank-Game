@@ -1,6 +1,7 @@
 
 #include "HealthComponent.h"
 #include "TankPawn.h"
+#include "TowerPawn.h"
 #include "GameModeBaseFox.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,6 +20,7 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CurrentHealth = MaxHealth;
 	ComponentOwner = GetOwner();
 
 	if (ComponentOwner)
@@ -56,25 +58,35 @@ void UHealthComponent::TakeDamage(float Damage)
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
 
-	if (CurrentHealth <= 0.0f)
+	if (CurrentHealth > 0.0f) return;
+
+	if (ComponentOwner->IsA<ATankPawn>())
 	{
-		if (ComponentOwner->IsA<ATankPawn>())
+		ATankPawn* TankPawn = Cast<ATankPawn>(ComponentOwner);
+		if (TankPawn)
 		{
 			AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
 			if (GameMode)
 			{
 				GameMode->LoseGame();
-				ComponentOwner->Destroy();
+				TankPawn->HandleDeath();
 			}
 		}
-		else if (ComponentOwner->IsA<ATurretPawn>())
+	}
+	else if (ComponentOwner->IsA<ATowerPawn>())
+	{
+		ATowerPawn* TowerPawn = Cast<ATowerPawn>(ComponentOwner);
+		if (TowerPawn)
 		{
 			AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
 			if (GameMode)
 			{
-				GameMode->AddScore(1);
-				ComponentOwner->Destroy();
+				GameMode->AddScore();
+				TowerPawn->HandleDeath();
 			}
+
 		}
+
 	}
+
 }
