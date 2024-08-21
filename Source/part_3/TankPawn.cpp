@@ -10,6 +10,7 @@ ATankPawn::ATankPawn() : Super()
 	Camera->SetupAttachment(SpringArm);
 
 	bTurretToCursorState = true;
+
 }
 
 void ATankPawn::Move(float Amount)
