@@ -72,7 +72,7 @@ void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
 	{
 		FVector ToTarget = LookAtTarget - TurretMesh->GetComponentLocation();
 		FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f); // -90.f - adjust for turret position 
-		FRotator NewLookRotation = FMath::RInterpTo(TurretMesh->GetComponentRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
+		FRotator NewLookRotation = FMath::RInterpConstantTo(TurretMesh->GetComponentRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
 		TurretMesh->SetWorldRotation(NewLookRotation);
 	}
 }

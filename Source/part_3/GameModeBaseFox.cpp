@@ -34,6 +34,8 @@ void AGameModeBaseFox::AddScore()
 {
 	CurrentScore += ScorePerKill;
 
+	ScoreUpdate();
+
 	if (CurrentScore >= WinScore)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("You won!"));
@@ -49,4 +51,14 @@ void AGameModeBaseFox::LoseGame()
 
 	GameLose();
 	RestartGameWithTimer(RestartDelay);
+}
+
+int32 AGameModeBaseFox::GetCurrentScore()
+{
+	return CurrentScore;
+}
+
+int32 AGameModeBaseFox::GetWinScore()
+{
+	return WinScore;
 }

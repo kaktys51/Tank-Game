@@ -45,6 +45,18 @@ public:
 	UFUNCTION()
 	void LoseGame();
 
+	//Called whenever game score is changed
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Events")
+	void ScoreUpdate();
+
+	UFUNCTION(BlueprintCallable, Category = "Game Rules")
+	int32 GetCurrentScore();
+
+	//Maximum score needed for win
+	UFUNCTION(BlueprintCallable, Category = "Game Rules")
+	int32 GetWinScore();
+
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Events")
 	void GameLose();
 

@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnHealthChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PART_3_API UHealthComponent : public UActorComponent
@@ -31,4 +32,14 @@ protected:
 public:	
 	UFUNCTION()
 	void TakeDamage(float Damage);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	float GetMaxHealth() const;
+
+	//Called when CurrentHealth changes its value
+	FOnHealthChanged OnHealthChanged;
+
 };

@@ -13,6 +13,16 @@ ATankPawn::ATankPawn() : Super()
 
 }
 
+void ATankPawn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HealthComponent)
+	{
+		HealthComponent->OnHealthChanged.AddUObject(this, &ATankPawn::HealthUpdated);
+	}
+}
+
 void ATankPawn::Move(float Amount)
 {
 	if (CapsuleComponent)

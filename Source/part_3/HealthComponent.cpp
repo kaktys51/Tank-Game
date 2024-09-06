@@ -39,6 +39,7 @@ void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, c
 	}
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+	OnHealthChanged.Broadcast();
 
 	if (CurrentHealth <= 0.f)
 	{
@@ -57,6 +58,7 @@ void UHealthComponent::TakeDamage(float Damage)
 	}
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+	OnHealthChanged.Broadcast();
 
 	if (CurrentHealth > 0.0f) return;
 
@@ -88,5 +90,14 @@ void UHealthComponent::TakeDamage(float Damage)
 		}
 
 	}
+}
 
+float UHealthComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+
+float UHealthComponent::GetMaxHealth() const
+{
+	return MaxHealth;
 }

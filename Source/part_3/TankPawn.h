@@ -19,6 +19,9 @@ public:
 	ATankPawn();
 
 protected:
+
+	virtual void BeginPlay() override;
+
 	float CurrentMoveAmount = 0.f;
 	float CurrentTurnAmount = 0.f;
 
@@ -42,6 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float AccelerationDuration = 0.2f;
 
+	//Changes the speed of interpolation of hull rotation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float RotationAccelerationDuration = 0.2f;
 
@@ -63,6 +67,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AProjectile> ProjectileClass;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
+	void HealthUpdated();
 
 	virtual void Tick(float DeltaTime) override;
 };
