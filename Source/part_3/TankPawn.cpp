@@ -25,17 +25,31 @@ void ATankPawn::BeginPlay()
 
 void ATankPawn::Move(float Amount)
 {
-	if (CapsuleComponent)
+	//if (CapsuleComponent)
+	//{
+	//	FVector ForvardVector = CapsuleComponent->GetForwardVector();
+
+	//	CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
+
+	//	//UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
+	//	CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
+
+	//	bMoveInputActive = true;
+	//}
+
+	if (BaseMesh)
 	{
-		FVector ForvardVector = CapsuleComponent->GetForwardVector();
+		FVector ForvardVector = BaseMesh->GetForwardVector();
 
 		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
 
 		//UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
-		CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
+		BaseMesh->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * BaseMesh->GetMass());
 
 		bMoveInputActive = true;
 	}
+
+	//попробовать переделать под движение днища танка
 }
 
 void ATankPawn::Turn(float Amount)
