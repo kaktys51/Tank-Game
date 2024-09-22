@@ -11,10 +11,10 @@ ATurretPawn::ATurretPawn()
 	RootComponent = CapsuleComponent;
 
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMesh"));
-	BaseMesh->SetupAttachment(CapsuleComponent);
+	BaseMesh->SetupAttachment(RootComponent);
 
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TurretMesh"));
-	TurretMesh->SetupAttachment(CapsuleComponent);
+	TurretMesh->SetupAttachment(RootComponent);
 
 	ProjectileSpawnPointFox = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
 	ProjectileSpawnPointFox->SetupAttachment(TurretMesh);
@@ -71,9 +71,16 @@ void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
 	if (TurretMesh)
 	{
 		FVector ToTarget = LookAtTarget - TurretMesh->GetComponentLocation();
+
+		FRotator CurrentRotation = TurretMesh->GetRelativeRotation();
+		FRotator TankRotation = GetActorRotation();
+
 		FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f); // -90.f - adjust for turret position 
-		FRotator NewLookRotation = FMath::RInterpConstantTo(TurretMesh->GetComponentRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
-		TurretMesh->SetWorldRotation(NewLookRotation);
+		LookAtRotation.Yaw -= TankRotation.Yaw;
+
+		FRotator NewLookRotation = FMath::RInterpConstantTo(CurrentRotation, LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
+
+		TurretMesh->SetRelativeRotation(NewLookRotation);
 	}
 }
 
