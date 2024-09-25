@@ -43,9 +43,18 @@ void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, c
 
 	if (CurrentHealth <= 0.f)
 	{
-		if (GetOwner())
+		if (ComponentOwner->IsA<ATankPawn>())
 		{
-			GetOwner()->Destroy();
+			ATankPawn* TankPawn = Cast<ATankPawn>(ComponentOwner);
+			if (TankPawn)
+			{
+				AGameModeBaseFox* GameMode = Cast<AGameModeBaseFox>(UGameplayStatics::GetGameMode(this));
+				if (GameMode)
+				{
+					GameMode->LoseGame();
+					TankPawn->HandleDeath();
+				}
+			}
 		}
 	}
 }
