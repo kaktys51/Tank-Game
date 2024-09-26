@@ -39,6 +39,18 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UCameraComponent> Camera;
 
+	//Timer for handle reload
+	FTimerHandle ReloadTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tank Actions")
+	float ReloadTime = 2.f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Tank Actions")
+	bool bGunLoaded = true;
+
+	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
+	void ReloadGun();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float AccelerationForce = 1000.f;
 
@@ -60,6 +72,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Fire();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Tank Actions")
+	void FireVSFX();
 
 	//Disables or enables turret rotation to cursor
 	UFUNCTION(BlueprintCallable, Category = "Movement")

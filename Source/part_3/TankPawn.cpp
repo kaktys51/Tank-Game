@@ -65,11 +65,22 @@ void ATankPawn::Fire()
 	UE_LOG(LogTemp, Warning, TEXT("Tank is shooting !"));
 	if (ProjectileClass && ProjectileSpawnPointFox)
 	{
+		if (!bGunLoaded) return;
+
+		bGunLoaded = false;
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ATankPawn::ReloadGun, ReloadTime, false);
+
 		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
 		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+		FireVSFX();
 	}
+}
+
+void ATankPawn::ReloadGun()
+{
+	bGunLoaded = true;
 }
 
 //Disables or enables turret rotation to cursor
