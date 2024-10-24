@@ -28,7 +28,7 @@ protected:
 	bool bMoveInputActive = false;
 	bool bTurnInputActive = false;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Movement")
 	bool bTurretToCursorState;
 
 public:
@@ -45,7 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tank Actions")
 	float ReloadTime = 2.f;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Tank Actions")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Tank Actions")
 	bool bGunLoaded = true;
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
@@ -61,6 +61,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float RotationAccelerationDuration = 0.2f;
 
+	//Movement func
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Move(float Amount);
 
@@ -73,6 +74,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Fire();
 
+	//Server movement RPC
+	UFUNCTION(Server, Reliable)
+	void ServerMove(float Amount);
+
+	UFUNCTION(Server, Reliable)
+	void ServerTurn(float Amount);
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Tank Actions")
 	void FireVSFX();
 
@@ -80,7 +88,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void SetTurretRotationToCursorState(bool bInputState);
 
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AProjectile> ProjectileClass;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")

@@ -8,6 +8,7 @@
 #include "Components/SceneComponent.h"
 #include "HealthComponent.h"
 #include "DestroyedPawn.h"
+#include "Net/UnrealNetwork.h"
 #include "TurretPawn.generated.h"
 
 class ATankPawn;
@@ -24,21 +25,23 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 public:
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
 	TObjectPtr<UCapsuleComponent> CapsuleComponent;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
 	TObjectPtr<UStaticMeshComponent> BaseMesh;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
 	TObjectPtr<UStaticMeshComponent> TurretMesh;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
 	TObjectPtr<USceneComponent> ProjectileSpawnPointFox;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Health")
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetSlotNames"), Category = "Team Color")
@@ -47,7 +50,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetMaterialParametrs"), Category = "Team Color")
 	FName MaterialParametrs;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Movement")
 	float TurretRotationAcceleration = 2.f;
 
 	UFUNCTION()
@@ -55,12 +58,18 @@ public:
 
 	UFUNCTION()
 	TArray<FName> GetSlotNames() const;
-	
+
 	UFUNCTION()
 	void TurretRotationToCursor();
 
+	UFUNCTION(Server, Reliable)
+	void ServerTurretRotationToCursor();
+
 	UFUNCTION()
 	void RotateTurret(const FVector& LookAtTarget);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRotateTurret(const FVector& LookAtTarget);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
@@ -69,7 +78,10 @@ public:
 	UFUNCTION()
 	void HandleDeath();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Destruction")
+	UFUNCTION(Server, Unreliable)
+	void ServerHandleDeath();
+
+	UPROPERTY(EditDefaultsOnly, Replicated, Category = "Destruction")
 	TSubclassOf<ADestroyedPawn> DestroyedClass;
 
 	virtual void Tick(float DeltaTime) override;
