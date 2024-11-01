@@ -33,6 +33,7 @@ void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	DOREPLIFETIME(ATankPawn, bTurretToCursorState);
 	DOREPLIFETIME(ATankPawn, bGunLoaded);
+	DOREPLIFETIME_CONDITION(ATankPawn, SimTankVelocity, COND_SimulatedOnly);
 }
 
 void ATankPawn::Move(float Amount)

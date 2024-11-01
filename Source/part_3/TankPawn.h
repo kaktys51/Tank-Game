@@ -62,6 +62,7 @@ public:
 	float RotationAccelerationDuration = 0.2f;
 
 	//Movement func
+
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Move(float Amount);
 
@@ -75,6 +76,7 @@ public:
 	void Fire();
 
 	//Server movement RPC
+
 	UFUNCTION(Server, Reliable)
 	void ServerMove(float Amount);
 
@@ -83,6 +85,10 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Tank Actions")
 	void FireVSFX();
+
+	//Used only for simulated proxies, to corectrly display movment VFX and SFX on client side
+	UPROPERTY(Replicated, BlueprintReadWrite)
+	float SimTankVelocity = 0.f;
 
 	//Disables or enables turret rotation to cursor
 	UFUNCTION(BlueprintCallable, Category = "Movement")

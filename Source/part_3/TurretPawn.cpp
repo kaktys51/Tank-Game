@@ -37,9 +37,6 @@ void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ATurretPawn, CapsuleComponent);
 	DOREPLIFETIME(ATurretPawn, BaseMesh);
 	DOREPLIFETIME(ATurretPawn, TurretMesh);
-	DOREPLIFETIME(ATurretPawn, ProjectileSpawnPointFox);
-	DOREPLIFETIME(ATurretPawn, HealthComponent);
-	DOREPLIFETIME(ATurretPawn, TurretRotationAcceleration);
 	DOREPLIFETIME(ATurretPawn, DestroyedClass);
 }
 

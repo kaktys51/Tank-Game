@@ -38,10 +38,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
 	TObjectPtr<UStaticMeshComponent> TurretMesh;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USceneComponent> ProjectileSpawnPointFox;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetSlotNames"), Category = "Team Color")
@@ -50,7 +50,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetMaterialParametrs"), Category = "Team Color")
 	FName MaterialParametrs;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float TurretRotationAcceleration = 2.f;
 
 	UFUNCTION()
