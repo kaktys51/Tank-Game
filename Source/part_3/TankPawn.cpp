@@ -3,6 +3,10 @@
 
 ATankPawn::ATankPawn() : Super()
 {
+
+	bReplicates = true;
+	SetReplicateMovement(true);
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(CapsuleComponent);
 
@@ -23,31 +27,66 @@ void ATankPawn::BeginPlay()
 	}
 }
 
+void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATankPawn, bTurretToCursorState);
+	DOREPLIFETIME(ATankPawn, bGunLoaded);
+	DOREPLIFETIME_CONDITION(ATankPawn, SimTankVelocity, COND_SimulatedOnly);
+}
+
 void ATankPawn::Move(float Amount)
 {
-	if (CapsuleComponent)
+	if(HasAuthority())
 	{
-		FVector ForvardVector = CapsuleComponent->GetForwardVector();
+		if (CapsuleComponent)
+		{
+			FVector ForvardVector = CapsuleComponent->GetForwardVector();
 
-		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
+			CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
 
-		//UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
-		CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
+			//UE_LOG(LogTemp, Warning, TEXT(" CurAmount: %f, Amount: %f, AccelDur: %f"), CurrentMoveAmount, Amount, AccelerationDuration);
+			CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * CapsuleComponent->GetMass());
 
-		bMoveInputActive = true;
+			bMoveInputActive = true;
+		}
+	}
+	else
+	{
+		ServerMove(Amount);
 	}
 }
 
+void ATankPawn::ServerMove_Implementation(float Amount)
+{
+	Move(Amount);
+}
+
+
 void ATankPawn::Turn(float Amount)
 {
-	CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, Amount, GetWorld()->GetDeltaSeconds(), RotationAccelerationDuration);
+	if (HasAuthority())
+	{
+		CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, Amount, GetWorld()->GetDeltaSeconds(), RotationAccelerationDuration);
 
-	FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
-	//UE_LOG(LogTemp, Warning, TEXT("Rotation: %f, CurAmount: %f"), Rotation.Yaw, CurrentTurnAmount);
-	AddActorLocalRotation(Rotation);
+		FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
+		//UE_LOG(LogTemp, Warning, TEXT("Rotation: %f, CurAmount: %f"), Rotation.Yaw, CurrentTurnAmount);
+		AddActorLocalRotation(Rotation);
 
-	bTurnInputActive = true;
+		bTurnInputActive = true;
+	}
+	else
+	{
+		ServerTurn(Amount);
+	}
 }
+
+void ATankPawn::ServerTurn_Implementation(float Amount)
+{
+	Turn(Amount);
+}
+
 
 void ATankPawn::Look(const FInputActionValue& Amount)
 {

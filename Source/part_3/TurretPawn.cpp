@@ -30,6 +30,16 @@ void ATurretPawn::BeginPlay()
 
 }
 
+void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATurretPawn, CapsuleComponent);
+	DOREPLIFETIME(ATurretPawn, BaseMesh);
+	DOREPLIFETIME(ATurretPawn, TurretMesh);
+	DOREPLIFETIME(ATurretPawn, DestroyedClass);
+}
+
 TArray<FString> ATurretPawn::GetMaterialParametrs() const
 {
 	TArray<FString> LocalMaterialParameters;
@@ -53,6 +63,7 @@ TArray<FName> ATurretPawn::GetSlotNames() const
 
 void ATurretPawn::TurretRotationToCursor()
 {
+
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
@@ -66,52 +77,77 @@ void ATurretPawn::TurretRotationToCursor()
 	}
 }
 
+void ATurretPawn::ServerTurretRotationToCursor_Implementation()
+{
+	TurretRotationToCursor();
+}
+
+
 void ATurretPawn::RotateTurret(const FVector& LookAtTarget)
 {
-	if (TurretMesh)
+	if (HasAuthority())
 	{
-		FVector ToTarget = LookAtTarget - TurretMesh->GetComponentLocation();
+		if (TurretMesh)
+		{
+			FVector ToTarget = LookAtTarget - TurretMesh->GetComponentLocation();
 
-		FRotator CurrentRotation = TurretMesh->GetRelativeRotation();
-		FRotator TankRotation = GetActorRotation();
+			FRotator CurrentRotation = TurretMesh->GetRelativeRotation();
+			FRotator TankRotation = GetActorRotation();
 
-		FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f); // -90.f - adjust for turret position 
-		LookAtRotation.Yaw -= TankRotation.Yaw;
+			FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f); // -90.f - adjust for turret position 
+			LookAtRotation.Yaw -= TankRotation.Yaw;
 
-		FRotator NewLookRotation = FMath::RInterpConstantTo(CurrentRotation, LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
+			FRotator NewLookRotation = FMath::RInterpConstantTo(CurrentRotation, LookAtRotation, GetWorld()->GetDeltaSeconds(), TurretRotationAcceleration);
 
-		TurretMesh->SetRelativeRotation(NewLookRotation);
+			TurretMesh->SetRelativeRotation(NewLookRotation);
+		}
+	}
+	else
+	{
+		ServerRotateTurret(LookAtTarget);
 	}
 }
+
+void ATurretPawn::ServerRotateTurret_Implementation(const FVector& LookAtTarget)
+{
+	RotateTurret(LookAtTarget);
+}
+
 
 void ATurretPawn::HandleDeath()
 {
-	if (BaseMesh && TurretMesh && CapsuleComponent)
+	if (HasAuthority())
 	{
-		BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		TurretMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		FVector CurrentLocation = GetActorLocation();
-		FRotator CurrentRotation = FRotator::ZeroRotator;
-		if (DestroyedClass)
+		if (BaseMesh && TurretMesh && CapsuleComponent)
 		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			TurretMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-			ADestroyedPawn* DestroyedPawn = GetWorld()->SpawnActor<ADestroyedPawn>(DestroyedClass, CurrentLocation, CurrentRotation, SpawnParams);
-			if (BaseMesh && TurretMesh && DestroyedPawn)
+			FVector CurrentLocation = GetActorLocation();
+			FRotator CurrentRotation = FRotator::ZeroRotator;
+			if (DestroyedClass)
 			{
-				DestroyedPawn->SetBasePosition(BaseMesh->GetComponentTransform());
-				DestroyedPawn->SetTurretPosition(TurretMesh->GetComponentTransform());
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+				ADestroyedPawn* DestroyedPawn = GetWorld()->SpawnActor<ADestroyedPawn>(DestroyedClass, CurrentLocation, CurrentRotation, SpawnParams);
+				if (BaseMesh && TurretMesh && DestroyedPawn)
+				{
+					DestroyedPawn->SetBasePosition(BaseMesh->GetComponentTransform());
+					DestroyedPawn->SetTurretPosition(TurretMesh->GetComponentTransform());
+				}
 			}
 		}
-	}
 
-	Destroy();
+		Destroy();
+	}
 }
 
-
+void ATurretPawn::ServerHandleDeath_Implementation()
+{
+	HandleDeath();
+}
 
 void ATurretPawn::Tick(float DeltaTime)
 {
