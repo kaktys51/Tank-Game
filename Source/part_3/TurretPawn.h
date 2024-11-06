@@ -62,13 +62,13 @@ public:
 	UFUNCTION()
 	void TurretRotationToCursor();
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Unreliable)
 	void ServerTurretRotationToCursor();
 
 	UFUNCTION()
 	void RotateTurret(const FVector& LookAtTarget);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Unreliable)
 	void ServerRotateTurret(const FVector& LookAtTarget);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")

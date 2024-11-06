@@ -77,10 +77,10 @@ public:
 
 	//Server movement RPC
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Unreliable)
 	void ServerMove(float Amount);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Unreliable)
 	void ServerTurn(float Amount);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Tank Actions")
