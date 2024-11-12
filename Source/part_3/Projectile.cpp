@@ -1,9 +1,13 @@
 
 #include "Projectile.h"
 #include "HealthComponent.h"
+#include "TurretPawn.h"
 
 AProjectile::AProjectile()
 {
+	//bReplicates = true;
+	//SetReplicateMovement(true);
+
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
@@ -32,14 +36,34 @@ void AProjectile::OnComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 	if (OtherActor && OtherActor != this && OtherComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Projectile hit: %s"), *OtherActor->GetName());
-
-		UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
+		if (HasAuthority())
 		{
-			if (HealthComponent)
+			UHealthComponent* HealthComponent = OtherActor->FindComponentByClass<UHealthComponent>();
 			{
-				HealthComponent->TakeDamage(DamageValue);
+				if (HealthComponent)
+				{
+					HealthComponent->TakeDamage(DamageValue);
+				}
 			}
 		}
+
+		FVector HitLocation = Hit.ImpactPoint;
+		FRotator HitRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.Normal);
+		if (HitEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitLocation, HitRotation, true);
+		}
+
+		//Plays hit sound base on OtherActor class
+		if (OtherActor->IsA(ATurretPawn::StaticClass()))
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, TurretHitSound, HitLocation);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, GeneralHitSound, HitLocation);
+		}
+
 		Destroy();
 	}
 }

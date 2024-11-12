@@ -83,6 +83,13 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void ServerTurn(float Amount);
 
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastFireVSFX();
+
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Tank Actions")
 	void FireVSFX();
 
