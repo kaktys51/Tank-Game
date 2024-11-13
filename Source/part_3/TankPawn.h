@@ -86,7 +86,7 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerFire();
 
-	UFUNCTION(NetMulticast, Unreliable)
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFireVSFX();
 
 
