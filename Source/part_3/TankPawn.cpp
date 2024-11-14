@@ -101,20 +101,55 @@ void ATankPawn::Look(const FInputActionValue& Amount)
 
 void ATankPawn::Fire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Tank is shooting !"));
-	if (ProjectileClass && ProjectileSpawnPointFox)
+	if(HasAuthority())
 	{
-		if (!bGunLoaded) return;
+		UE_LOG(LogTemp, Warning, TEXT("Tank is shooting !"));
+		if (ProjectileClass && ProjectileSpawnPointFox)
+		{
+			if (!bGunLoaded) return;
 
-		bGunLoaded = false;
-		GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ATankPawn::ReloadGun, ReloadTime, false);
+			bGunLoaded = false;
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ATankPawn::ReloadGun, ReloadTime, false);
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = this->GetInstigator();
+
+			FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+			FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
+
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+			MulticastFireVSFX();
+			//FireVSFX();
+		}
+	}
+	else
+	{
+		ServerFire();
+	}
+}
+
+void ATankPawn::ServerFire_Implementation()
+{
+	Fire();
+}
+
+void ATankPawn::MulticastFireVSFX_Implementation()
+{
+	if (!HasAuthority())
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = this->GetInstigator();
 
 		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
-		FireVSFX();
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 	}
+
+	FireVSFX();
 }
 
 void ATankPawn::ReloadGun()
