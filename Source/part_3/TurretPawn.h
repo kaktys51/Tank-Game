@@ -65,7 +65,7 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void ServerTurretRotationToCursor();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void RotateTurret(const FVector& LookAtTarget);
 
 	UFUNCTION(Server, Unreliable)

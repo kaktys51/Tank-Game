@@ -14,7 +14,7 @@ ATowerPawn::ATowerPawn()
 
 void ATowerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor->IsA(ATankPawn::StaticClass()))
+	/*if (OtherActor && OtherActor->IsA(ATankPawn::StaticClass()))
 	{
 		TargetRef = OtherActor;
 
@@ -22,16 +22,21 @@ void ATowerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		UE_LOG(LogTemp, Warning, TEXT(" TargetLocation: %f, %f, %f"), TargetLocation.X, TargetLocation.Y, TargetLocation.Z);
 		RotateTurret(TargetLocation);
 		GetWorld()->GetTimerManager().SetTimer(ShootingTimer, this, &ATowerPawn::Fire, ShootInterval, true);
-	}
+	}*/
 }
 
 void ATowerPawn::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor && OtherActor == TargetRef)
+	/*if (OtherActor && OtherActor == TargetRef)
 	{
 		TargetRef = nullptr;
 		GetWorld()->GetTimerManager().ClearTimer(ShootingTimer);
-	}
+	}*/
+}
+
+void ATowerPawn::ReloadGun()
+{
+	bGunLoaded = true;
 }
 
 void ATowerPawn::Fire()
@@ -40,6 +45,11 @@ void ATowerPawn::Fire()
 
 	if (ProjectileClass && ProjectileSpawnPointFox)
 	{
+		if (!bGunLoaded) return;
+
+		bGunLoaded = false;
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ATowerPawn::ReloadGun, ReloadTime, false);
+
 		FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 		FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
