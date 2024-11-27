@@ -35,6 +35,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USphereComponent> DetectionSphere;
 
+	UPROPERTY( BlueprintReadOnly, Category = "Tank Actions")
+	bool bGunLoaded = true;
+
+	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
+	void ReloadGun();
+
 	UFUNCTION(BlueprintCallable, Category = "Tower Actions")
 	void Fire();
 
@@ -45,10 +51,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AProjectile> ProjectileClass;
 
-	FTimerHandle ShootingTimer;
+	FTimerHandle ReloadTimer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actions")
-	float ShootInterval = 2.f;
+	float ReloadTime = 2.f;
 
 	virtual void Tick(float DeltaTime) override;
 };
