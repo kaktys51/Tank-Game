@@ -35,7 +35,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USphereComponent> DetectionSphere;
 
-	UPROPERTY( BlueprintReadOnly, Category = "Tank Actions")
+	UPROPERTY(BlueprintReadOnly, Category = "Tank Actions")
 	bool bGunLoaded = true;
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
@@ -44,9 +44,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tower Actions")
 	void Fire();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFireVSFX();
+
 	//For implementing vfx inside blueprint
 	UFUNCTION(BlueprintImplementableEvent, Category = "VFX")
-	void FireVFX();
+	void FireVSFX();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AProjectile> ProjectileClass;

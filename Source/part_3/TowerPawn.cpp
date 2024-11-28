@@ -4,6 +4,9 @@
 
 ATowerPawn::ATowerPawn()
 {
+	bReplicates = true;
+	SetReplicateMovement(true);
+
 	DetectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionSphere"));
 	DetectionSphere->SetCollisionProfileName(TEXT("Trigger"));
 	DetectionSphere->SetupAttachment(CapsuleComponent);
@@ -43,6 +46,7 @@ void ATowerPawn::Fire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Tower is shooting at player!"));
 
+	if (!HasAuthority()) return;
 	if (ProjectileClass && ProjectileSpawnPointFox)
 	{
 		if (!bGunLoaded) return;
@@ -55,8 +59,29 @@ void ATowerPawn::Fire()
 
 		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
 
-		FireVFX();
+		MulticastFireVSFX();
 	}
+}
+
+void ATowerPawn::MulticastFireVSFX_Implementation()
+{
+	if (!HasAuthority())
+	{
+		if (ProjectileClass && ProjectileSpawnPointFox)
+		{
+			if (!bGunLoaded) return;
+
+			bGunLoaded = false;
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ATowerPawn::ReloadGun, ReloadTime, false);
+
+			FVector SpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
+			FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
+
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+		}
+	}
+
+	FireVSFX();
 }
 
 void ATowerPawn::Tick(float DeltaTime)
