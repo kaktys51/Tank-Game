@@ -23,17 +23,6 @@ void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*AController* PlayerController = GetController();
-
-	if (PlayerController)
-	{
-		ACustomPlayerController* TankController = Cast<ACustomPlayerController>(PlayerController);
-		if (TankController)
-		{
-			TankController->ApplyTeamColor();
-		}
-	}*/
-
 	if (HealthComponent)
 	{
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATankPawn::HealthUpdated);
@@ -176,9 +165,12 @@ void ATankPawn::SetTurretRotationToCursorState(bool bInputState)
 	bTurretToCursorState = bInputState;
 }
 
-void ATankPawn::SetTeamSettings()
+void ATankPawn::SetTeamSettings(FLinearColor NewTeamColor, ETeam NewTeam)
 {
-	//for correct exec need to set MaterialSlotName and MaterialParametrs in editor 
+	//for correct exec need to set MaterialSlotName and MaterialParametrs in editor properly
+	MaterialColor = NewTeamColor;
+	PawnTeam = NewTeam;
+
 	if (DynamicTeamColor)
 	{
 		DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
@@ -188,8 +180,6 @@ void ATankPawn::SetTeamSettings()
 void ATankPawn::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	//AController* PlayerController = GetController();
 
 	if (NewController)
 	{

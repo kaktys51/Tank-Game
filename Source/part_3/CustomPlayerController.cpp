@@ -42,20 +42,19 @@ void ACustomPlayerController::SetPawnTeam(ATankPawn* PlayerTank)
 		switch (PlayerTeam)
 		{
 		case ETeam::Blue:
-			PlayerTank->MaterialColor = FLinearColor(0.0f, 0.0f, 1.0f);
-			PlayerTank->SetTeamSettings();
+			PlayerTank->SetTeamSettings(FLinearColor(0.0f, 0.0f, 1.0f), PlayerTeam);
 			break;
 		case ETeam::Green:
-			PlayerTank->MaterialColor = FLinearColor(0.0f, 1.0f, 0.0f);
+			PlayerTank->SetTeamSettings(FLinearColor(0.0f, 1.0f, 0.0f), PlayerTeam);
 			break;
 		case ETeam::Pink:
-			PlayerTank->MaterialColor = FLinearColor(1.0f, 0.75f, 0.8f);
+			PlayerTank->SetTeamSettings(FLinearColor(1.0f, 0.75f, 0.8f), PlayerTeam);
 			break;
 		case ETeam::Yellow:
-			PlayerTank->MaterialColor = FLinearColor(1.0f, 1.0f, 0.0f);
+			PlayerTank->SetTeamSettings(FLinearColor(1.0f, 1.0f, 0.0f), PlayerTeam);
 			break;
 		default:
-			PlayerTank->MaterialColor = FLinearColor(0.0f, 0.0f, 1.0f);
+			PlayerTank->SetTeamSettings(FLinearColor(0.0f, 0.0f, 1.0f), PlayerTeam);
 			break;
 		}
 	}

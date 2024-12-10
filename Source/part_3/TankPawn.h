@@ -6,6 +6,7 @@
 #include "Projectile.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "PlayerTeams_Enum.h"
 #include "InputActionValue.h"
 #include "TankPawn.generated.h"
 
@@ -107,9 +108,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void HealthUpdated();
 
+	//Inherits value from controller in SetTeamSettings, used for damage logic
+	UPROPERTY(BlueprintReadOnly, Category = "Team")
+	ETeam PawnTeam;
+
 	//Changes DynamicTeamColor in players team color
 	UFUNCTION()
-	void SetTeamSettings();
+	void SetTeamSettings(FLinearColor NewTeamColor, ETeam NewTeam);
 
 	virtual void PossessedBy(AController* NewController) override;
 
