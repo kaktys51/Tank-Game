@@ -71,6 +71,10 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void ServerRotateTurret(const FVector& LookAtTarget);
 
+	//material that displays player team color, can be changed by controller PlayerTeam value
+	UPROPERTY(BlueprintReadOnly)
+	UMaterialInstanceDynamic* DynamicTeamColor;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
 

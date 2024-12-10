@@ -107,5 +107,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void HealthUpdated();
 
+	//Changes DynamicTeamColor in players team color
+	UFUNCTION()
+	void SetTeamSettings();
+
+	virtual void PossessedBy(AController* NewController) override;
+
 	virtual void Tick(float DeltaTime) override;
 };

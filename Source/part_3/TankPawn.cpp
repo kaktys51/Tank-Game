@@ -1,5 +1,7 @@
 
 #include "TankPawn.h"
+#include "CustomPlayerController.h"
+
 
 ATankPawn::ATankPawn() : Super()
 {
@@ -20,6 +22,17 @@ ATankPawn::ATankPawn() : Super()
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	/*AController* PlayerController = GetController();
+
+	if (PlayerController)
+	{
+		ACustomPlayerController* TankController = Cast<ACustomPlayerController>(PlayerController);
+		if (TankController)
+		{
+			TankController->ApplyTeamColor();
+		}
+	}*/
 
 	if (HealthComponent)
 	{
@@ -161,6 +174,31 @@ void ATankPawn::ReloadGun()
 void ATankPawn::SetTurretRotationToCursorState(bool bInputState)
 {
 	bTurretToCursorState = bInputState;
+}
+
+void ATankPawn::SetTeamSettings()
+{
+	//for correct exec need to set MaterialSlotName and MaterialParametrs in editor 
+	if (DynamicTeamColor)
+	{
+		DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+	}
+}
+
+void ATankPawn::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	//AController* PlayerController = GetController();
+
+	if (NewController)
+	{
+		ACustomPlayerController* TankController = Cast<ACustomPlayerController>(NewController);
+		if (TankController)
+		{
+			TankController->SetPawnTeam(this);
+		}
+	}
 }
 
 void ATankPawn::Tick(float DeltaTime)

@@ -166,16 +166,20 @@ void ATurretPawn::PostInitializeComponents()
 		UMaterialInterface* MaterialInterface = StaticBaseMash->GetMaterial(SlotIndex);
 		if (MaterialInterface)
 		{
-			UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(MaterialInterface, StaticBaseMash);
+			DynamicTeamColor = UMaterialInstanceDynamic::Create(MaterialInterface, StaticBaseMash);
+			//UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(MaterialInterface, StaticBaseMash);
 
 			FName MaterialParametrName = MaterialParametrs;
 			FLinearColor NewParametrColor = MaterialColor;
-			DynamicMaterial->SetVectorParameterValue(MaterialParametrName, NewParametrColor);
+			DynamicTeamColor->SetVectorParameterValue(MaterialParametrName, NewParametrColor);
+			//DynamicMaterial->SetVectorParameterValue(MaterialParametrName, NewParametrColor);
 
 			if (BaseMesh && TurretMesh)
 			{
-				BaseMesh->SetMaterial(SlotIndex, DynamicMaterial);
-				TurretMesh->SetMaterial(SlotIndex, DynamicMaterial);
+				BaseMesh->SetMaterial(SlotIndex, DynamicTeamColor);
+				TurretMesh->SetMaterial(SlotIndex, DynamicTeamColor);
+				//BaseMesh->SetMaterial(SlotIndex, DynamicMaterial);
+				//TurretMesh->SetMaterial(SlotIndex, DynamicMaterial);
 			}
 		}
 	}
