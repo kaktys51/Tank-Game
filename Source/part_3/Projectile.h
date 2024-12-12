@@ -12,6 +12,7 @@
 #include "Sound/SoundBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "PlayerTeams_Enum.h"
 #include "Projectile.generated.h"
 
 UCLASS()
@@ -37,6 +38,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float DamageValue;
+
+	//Used to determine friendly fire
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	ETeam OwnerTeam;
+
+	//Called on spawn from ATankPawn
+	UFUNCTION()
+	void SetOwnerTeam(ETeam TeamValue);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UParticleSystem* HitEffect;

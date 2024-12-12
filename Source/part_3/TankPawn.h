@@ -109,8 +109,12 @@ public:
 	void HealthUpdated();
 
 	//Inherits value from controller in SetTeamSettings, used for damage logic
-	UPROPERTY(BlueprintReadOnly, Category = "Team")
+	UPROPERTY(ReplicatedUsing = OnRep_PawnTeam, BlueprintReadOnly, Category = "Team")
 	ETeam PawnTeam;
+
+	//On updating PawnTeam from server, changes color of DynamicTeamColor material
+	UFUNCTION()
+	void OnRep_PawnTeam();
 
 	//Changes DynamicTeamColor in players team color
 	UFUNCTION()
