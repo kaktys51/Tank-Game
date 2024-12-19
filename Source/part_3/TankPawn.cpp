@@ -28,7 +28,6 @@ void ATankPawn::BeginPlay()
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATankPawn::HealthUpdated);
 	}
 
-	OnRep_PawnTeam();
 }
 
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -169,36 +168,11 @@ void ATankPawn::SetTurretRotationToCursorState(bool bInputState)
 	bTurretToCursorState = bInputState;
 }
 
-void ATankPawn::OnRep_PawnTeam()
-{
-	switch (PawnTeam)
-	{
-	case ETeam::Blue:
-		MaterialColor = FLinearColor(0.0f, 0.0f, 1.0f);
-		break;
-	case ETeam::Green:
-		MaterialColor = FLinearColor(0.0f, 1.0f, 0.0f);
-		break;
-	case ETeam::Pink:
-		MaterialColor = FLinearColor(1.0f, 0.1f, 0.65f);
-		break;
-	case ETeam::Yellow:
-		MaterialColor = FLinearColor(1.0f, 1.0f, 0.0f);
-		break;
-	default:
-		MaterialColor = FLinearColor(0.0f, 0.0f, 1.0f);
-		break;
-	}
-
-	if (DynamicTeamColor)
-	{
-		DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
-	}
-}
 
 void ATankPawn::SetTeamSettings(FLinearColor NewTeamColor, ETeam NewTeam)
 {
 	//for correct exec need to set MaterialSlotName and MaterialParametrs in editor properly
+
 	MaterialColor = NewTeamColor;
 	PawnTeam = NewTeam;
 	HealthComponent->SetComponentOwnerTeam(NewTeam);
@@ -206,6 +180,20 @@ void ATankPawn::SetTeamSettings(FLinearColor NewTeamColor, ETeam NewTeam)
 	if (DynamicTeamColor)
 	{
 		DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+	}
+
+	MulticastColorSettings(NewTeamColor);
+}
+
+void ATankPawn::MulticastColorSettings_Implementation(FLinearColor NewTeamColor)
+{
+	if (!HasAuthority())
+	{
+		MaterialColor = NewTeamColor;
+		if (DynamicTeamColor)
+		{
+			DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+		}
 	}
 }
 

@@ -38,6 +38,7 @@ void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ATurretPawn, BaseMesh);
 	DOREPLIFETIME(ATurretPawn, TurretMesh);
 	DOREPLIFETIME(ATurretPawn, DestroyedClass);
+	DOREPLIFETIME(ATurretPawn, HealthComponent);
 }
 
 TArray<FString> ATurretPawn::GetMaterialParametrs() const

@@ -26,11 +26,27 @@ void ACustomPlayerController::SetPlayerEnabledState(bool bPlayerEnabled)
 	}
 }
 
-void ACustomPlayerController::SwichTeam(int32 NewTeam)
+FLinearColor ACustomPlayerController::GetTeamColor(ETeam ControllerTeam)const
+{
+	if (!TeamColorsDataAsset) return FLinearColor::White;
+
+	for (const FTeamColors& DataAsset : TeamColorsDataAsset->TeamsAndColors)
+	{
+		if (DataAsset.Team == ControllerTeam)
+		{
+			return DataAsset.TeamColor;
+		}
+	}
+
+	return FLinearColor::White;
+}
+
+
+void ACustomPlayerController::SwitchTeam(int32 NewTeam)
 {
 	if (!HasAuthority())
 	{
-		ServerSwichTeam(NewTeam);
+		ServerSwitchTeam(NewTeam);
 		return;
 	}
 	PlayerTeam = static_cast<ETeam>(NewTeam);
@@ -48,7 +64,7 @@ void ACustomPlayerController::SwichTeam(int32 NewTeam)
 	}
 }
 
-void ACustomPlayerController::ServerSwichTeam_Implementation(int32 NewTeam)
+void ACustomPlayerController::ServerSwitchTeam_Implementation(int32 NewTeam)
 {
 
 	PlayerTeam = static_cast<ETeam>(NewTeam);
@@ -73,29 +89,9 @@ ETeam ACustomPlayerController::GetPlayerTeam()
 
 void ACustomPlayerController::SetPawnTeam(ATankPawn* PlayerTank)
 {
-	//APawn* ControlledPawn = ACustomPlayerController::GetPawn();
 
 	if (PlayerTank)
-	{
-		//ATankPawn* PlayerTank = Cast<ATankPawn>(ControlledPawn);
-		
-		switch (PlayerTeam)
-		{
-		case ETeam::Blue:
-			PlayerTank->SetTeamSettings(FLinearColor(0.0f, 0.0f, 1.0f), PlayerTeam);
-			break;
-		case ETeam::Green:
-			PlayerTank->SetTeamSettings(FLinearColor(0.0f, 1.0f, 0.0f), PlayerTeam);
-			break;
-		case ETeam::Pink:
-			PlayerTank->SetTeamSettings(FLinearColor(1.0f, 0.1f, 0.65f), PlayerTeam);
-			break;
-		case ETeam::Yellow:
-			PlayerTank->SetTeamSettings(FLinearColor(1.0f, 1.0f, 0.0f), PlayerTeam);
-			break;
-		default:
-			PlayerTank->SetTeamSettings(FLinearColor(0.0f, 0.0f, 1.0f), PlayerTeam);
-			break;
-		}
+	{		
+		PlayerTank->SetTeamSettings(GetTeamColor(PlayerTeam), PlayerTeam);
 	}
 }

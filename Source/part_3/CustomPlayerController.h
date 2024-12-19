@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "PlayerTeams_Enum.h"
+#include "TeamColorsDataAsset.h"
 #include "CustomPlayerController.generated.h"
 
 class ATankPawn;
@@ -24,6 +25,14 @@ protected:
 
 public:
 
+	//Data Asset that contains team colors, setting up in editor
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
+	UTeamColorsDataAsset* TeamColorsDataAsset;
+
+	//Extract color from data asset
+	UFUNCTION()
+	FLinearColor GetTeamColor(ETeam ControllerTeam) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void SetPlayerEnabledState(bool bPlayerEnabled);
 
@@ -32,11 +41,11 @@ public:
 
 	//Used in conscole to change plyaer team
 	UFUNCTION(Exec, BlueprintCallable, Category = "Team")
-	void SwichTeam(int32 NewTeam);
+	void SwitchTeam(int32 NewTeam);
 
 	//Used for correct change of teams on client side
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Team")
-	void ServerSwichTeam(int32 NewTeam);
+	void ServerSwitchTeam(int32 NewTeam);
 
 	//applies color for Team Material on tank
 	UFUNCTION(BlueprintCallable, Category = "Team")

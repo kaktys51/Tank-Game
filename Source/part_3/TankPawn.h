@@ -109,16 +109,16 @@ public:
 	void HealthUpdated();
 
 	//Inherits value from controller in SetTeamSettings, used for damage logic
-	UPROPERTY(ReplicatedUsing = OnRep_PawnTeam, BlueprintReadOnly, Category = "Team")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Team")
 	ETeam PawnTeam;
-
-	//On updating PawnTeam from server, changes color of DynamicTeamColor material
-	UFUNCTION()
-	void OnRep_PawnTeam();
 
 	//Changes DynamicTeamColor in players team color
 	UFUNCTION()
 	void SetTeamSettings(FLinearColor NewTeamColor, ETeam NewTeam);
+
+	//Updates material color of new team on simProxy and clinet sides
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastColorSettings(FLinearColor NewTeamColor);
 
 	virtual void PossessedBy(AController* NewController) override;
 

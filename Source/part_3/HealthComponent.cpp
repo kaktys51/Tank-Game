@@ -13,6 +13,7 @@ UHealthComponent::UHealthComponent()
 	MaxHealth = 100.f;
 	CurrentHealth = MaxHealth;
 	ComponentOwner = nullptr;
+	SetIsReplicatedByDefault(true);
 }
 
 
@@ -41,6 +42,8 @@ void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	if (!ComponentOwner) return;
+
 	if (ComponentOwner->HasAuthority())
 	{
 		if (Damage <= 0.0f)
@@ -72,6 +75,8 @@ void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, c
 
 void UHealthComponent::TakeDamage(float Damage, ETeam IncomingTeam)
 {
+	if (!ComponentOwner) return;
+
 	if (ComponentOwner->HasAuthority())
 	{
 		if (Damage <= 0.0f)

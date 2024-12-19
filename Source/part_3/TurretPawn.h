@@ -41,7 +41,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USceneComponent> ProjectileSpawnPointFox;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetSlotNames"), Category = "Team Color")
