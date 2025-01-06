@@ -52,6 +52,7 @@ void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, c
 		}
 
 		CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+		//left here for standalone mode
 		OnHealthChanged.Broadcast();
 
 		if (CurrentHealth <= 0.f)
@@ -89,12 +90,14 @@ void UHealthComponent::TakeDamage(float Damage, ETeam IncomingTeam)
 			if (IncomingTeam != ComponentOwnerTeam)
 			{
 				CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+				//left here for standalone mode
 				OnHealthChanged.Broadcast();
 			}
 		}
 		else
 		{
 			CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+			//left here for standalone mode
 			OnHealthChanged.Broadcast();
 		}
 
@@ -130,6 +133,11 @@ void UHealthComponent::TakeDamage(float Damage, ETeam IncomingTeam)
 
 		}
 	}
+}
+
+void UHealthComponent::OnRep_CurrentHealth()
+{
+	OnHealthChanged.Broadcast();
 }
 
 void UHealthComponent::SetComponentOwnerTeam(ETeam NewOwnerTeam)

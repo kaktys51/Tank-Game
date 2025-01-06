@@ -24,7 +24,7 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth, VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	float CurrentHealth;
 
 	//This is copy of PawnTeam value for proper damage calculation
@@ -37,6 +37,10 @@ protected:
 public:	
 	UFUNCTION()
 	void TakeDamage(float Damage, ETeam IncomingTeam = ETeam::Blue);
+
+	//Used for correct update call in UI health bar
+	UFUNCTION()
+	void OnRep_CurrentHealth();
 
 	//Settup copy of PawnTeam to HealthComponent for proper damage calculation
 	UFUNCTION()
