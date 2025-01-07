@@ -75,7 +75,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	UMaterialInstanceDynamic* DynamicTeamColor;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
 
 	//Destroys the original actor and spawns the destroyed version. 
