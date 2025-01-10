@@ -28,6 +28,14 @@ void ATankPawn::BeginPlay()
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATankPawn::HealthUpdated);
 	}
 
+	//used for applying correct team color of simProxy on client side when joined the game
+	if (!IsLocallyControlled())
+	{
+		if (DynamicTeamColor)
+		{
+			DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+		}
+	}
 }
 
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
