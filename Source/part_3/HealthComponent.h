@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "PlayerTeams_Enum.h"
 #include "HealthComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnHealthChanged);
@@ -20,18 +21,30 @@ protected:
 
 	AActor* ComponentOwner;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth, VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	float CurrentHealth;
+
+	//This is copy of PawnTeam value for proper damage calculation
+	UPROPERTY()
+	ETeam ComponentOwnerTeam;
 
 	UFUNCTION()
 	void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 public:	
 	UFUNCTION()
-	void TakeDamage(float Damage);
+	void TakeDamage(float Damage, ETeam IncomingTeam = ETeam::Blue);
+
+	//Used for correct update call in UI health bar
+	UFUNCTION()
+	void OnRep_CurrentHealth();
+
+	//Settup copy of PawnTeam to HealthComponent for proper damage calculation
+	UFUNCTION()
+	void SetComponentOwnerTeam(ETeam NewOwnerTeam);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetCurrentHealth() const;

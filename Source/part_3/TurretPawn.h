@@ -41,7 +41,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USceneComponent> ProjectileSpawnPointFox;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (GetOptions = "GetSlotNames"), Category = "Team Color")
@@ -71,7 +71,11 @@ public:
 	UFUNCTION(Server, Unreliable)
 	void ServerRotateTurret(const FVector& LookAtTarget);
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team Color")
+	//material that displays player team color, can be changed by controller PlayerTeam value
+	UPROPERTY(BlueprintReadOnly)
+	UMaterialInstanceDynamic* DynamicTeamColor;
+
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Team Color")
 	FLinearColor MaterialColor;
 
 	//Destroys the original actor and spawns the destroyed version. 

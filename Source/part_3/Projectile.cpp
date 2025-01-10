@@ -25,6 +25,11 @@ AProjectile::AProjectile()
 	DamageValue = 20.f;
 }
 
+void AProjectile::SetOwnerTeam(ETeam TeamValue)
+{
+	OwnerTeam = TeamValue;
+}
+
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -42,7 +47,7 @@ void AProjectile::OnComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			{
 				if (HealthComponent)
 				{
-					HealthComponent->TakeDamage(DamageValue);
+					HealthComponent->TakeDamage(DamageValue, OwnerTeam);
 				}
 			}
 		}

@@ -1,5 +1,7 @@
 
 #include "TankPawn.h"
+#include "CustomPlayerController.h"
+
 
 ATankPawn::ATankPawn() : Super()
 {
@@ -25,6 +27,15 @@ void ATankPawn::BeginPlay()
 	{
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATankPawn::HealthUpdated);
 	}
+
+	//used for applying correct team color of simProxy on client side when joined the game
+	if (!IsLocallyControlled())
+	{
+		if (DynamicTeamColor)
+		{
+			DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+		}
+	}
 }
 
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -33,6 +44,7 @@ void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	DOREPLIFETIME(ATankPawn, bTurretToCursorState);
 	DOREPLIFETIME(ATankPawn, bGunLoaded);
+	DOREPLIFETIME(ATankPawn, PawnTeam);
 	DOREPLIFETIME_CONDITION(ATankPawn, SimTankVelocity, COND_SimulatedOnly);
 }
 
@@ -119,6 +131,7 @@ void ATankPawn::Fire()
 			FRotator SpawnRotation = ProjectileSpawnPointFox->GetComponentRotation();
 
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+			Projectile->SetOwnerTeam(PawnTeam);
 
 			MulticastFireVSFX();
 			//FireVSFX();
@@ -161,6 +174,49 @@ void ATankPawn::ReloadGun()
 void ATankPawn::SetTurretRotationToCursorState(bool bInputState)
 {
 	bTurretToCursorState = bInputState;
+}
+
+
+void ATankPawn::SetTeamSettings(FLinearColor NewTeamColor, ETeam NewTeam)
+{
+	//for correct exec need to set MaterialSlotName and MaterialParametrs in editor properly
+
+	MaterialColor = NewTeamColor;
+	PawnTeam = NewTeam;
+	HealthComponent->SetComponentOwnerTeam(NewTeam);
+
+	if (DynamicTeamColor)
+	{
+		DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+	}
+
+	MulticastColorSettings(NewTeamColor);
+}
+
+void ATankPawn::MulticastColorSettings_Implementation(FLinearColor NewTeamColor)
+{
+	if (!HasAuthority())
+	{
+		MaterialColor = NewTeamColor;
+		if (DynamicTeamColor)
+		{
+			DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
+		}
+	}
+}
+
+void ATankPawn::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (NewController)
+	{
+		ACustomPlayerController* TankController = Cast<ACustomPlayerController>(NewController);
+		if (TankController)
+		{
+			TankController->SetPawnTeam(this);
+		}
+	}
 }
 
 void ATankPawn::Tick(float DeltaTime)
