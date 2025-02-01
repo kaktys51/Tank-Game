@@ -7,13 +7,16 @@ ATankPawn::ATankPawn() : Super()
 {
 
 	bReplicates = true;
-	SetReplicateMovement(true);
+	SetReplicateMovement(false);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(CapsuleComponent);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	MovementComponent = CreateDefaultSubobject<UTankMovementComponent>(TEXT("TankMovementComponent"));
+	MovementComponent->UpdatedComponent = CapsuleComponent;
 
 	bTurretToCursorState = true;
 
@@ -47,6 +50,24 @@ void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATankPawn, PawnTeam);
 	DOREPLIFETIME_CONDITION(ATankPawn, SimTankVelocity, COND_SimulatedOnly);
 }
+
+void ATankPawn::MoveComp(float Amount)
+{
+	if (MovementComponent)
+	{
+		MovementComponent->TankOwner;
+		MovementComponent->Move(Amount);
+	}
+}
+
+void ATankPawn::TurnComp(float Amount)
+{
+	if (MovementComponent)
+	{
+		MovementComponent->Turn(Amount);
+	}
+}
+
 
 void ATankPawn::Move(float Amount)
 {
@@ -231,15 +252,17 @@ void ATankPawn::Tick(float DeltaTime)
 	FVector ProjetileSpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 	DrawDebugSphere(GetWorld(), ProjetileSpawnLocation, 70.f, 12, FColor::Red);
 
-	if (!bMoveInputActive && FMath::Abs(CurrentMoveAmount) > 0.1f)
-	{
-		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, 0.0f, DeltaTime, AccelerationDuration);
-	}
-	bMoveInputActive = false;
+	// off until tankMovementComponent !!!!!!
+	// 
+	//if (!bMoveInputActive && FMath::Abs(CurrentMoveAmount) > 0.1f)
+	//{
+	//	CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, 0.0f, DeltaTime, AccelerationDuration);
+	//}
+	//bMoveInputActive = false;
 
-	if (!bTurnInputActive && FMath::Abs(CurrentTurnAmount) != 0.1f)
-	{
-		CurrentTurnAmount = 0.f;
-	}
-	bTurnInputActive = false;
+	//if (!bTurnInputActive && FMath::Abs(CurrentTurnAmount) != 0.1f)
+	//{
+	//	CurrentTurnAmount = 0.f;
+	//}
+	//bTurnInputActive = false;
 }

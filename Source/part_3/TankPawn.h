@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "PlayerTeams_Enum.h"
 #include "InputActionValue.h"
+#include "TankMovementComponent.h"
 #include "TankPawn.generated.h"
 
 UCLASS()
@@ -39,6 +40,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	TObjectPtr<UTankMovementComponent> MovementComponent;
 
 	//Timer for handle reload
 	FTimerHandle ReloadTimer;
@@ -75,6 +79,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Fire();
+
+	// New movemnt from Component 
+
+	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
+	void MoveComp(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
+	void TurnComp(float Amount);
 
 	//Server movement RPC
 
