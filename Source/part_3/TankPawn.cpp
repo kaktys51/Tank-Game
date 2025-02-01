@@ -45,6 +45,7 @@ void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ATankPawn, MovementComponent);
 	DOREPLIFETIME(ATankPawn, bTurretToCursorState);
 	DOREPLIFETIME(ATankPawn, bGunLoaded);
 	DOREPLIFETIME(ATankPawn, PawnTeam);

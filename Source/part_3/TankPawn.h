@@ -41,7 +41,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UCameraComponent> Camera;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	UPROPERTY(Replicated, BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UTankMovementComponent> MovementComponent;
 
 	//Timer for handle reload
