@@ -54,10 +54,16 @@ void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 void ATankPawn::MoveComp(float Amount)
 {
-	if (MovementComponent)
+	/*if (MovementComponent)
 	{
 		MovementComponent->TankOwner;
 		MovementComponent->Move(Amount);
+	}*/
+
+	if (MovementComponent)
+	{
+		FVector ForvardVector = CapsuleComponent->GetForwardVector();
+		MovementComponent->AddInputVector(ForvardVector * Amount);
 	}
 }
 

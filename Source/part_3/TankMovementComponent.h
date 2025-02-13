@@ -34,6 +34,63 @@ public:
 
 };
 
+USTRUCT()
+struct FTankSafeMove
+{
+	GENERATED_BODY()
+
+public:
+	FTankSafeMove();
+
+	UPROPERTY()
+	float TimeStamp;
+
+	UPROPERTY()
+	float DeltaTime;
+
+	UPROPERTY()
+	FVector InputVector;
+
+	UPROPERTY()
+	FVector_NetQuantize100 SavedLocation;
+
+	FTankSafeMove(float inTimeStamp, float inDeltaTime, FVector inInputVector, FVector inTankLocation) : TimeStamp(inTimeStamp), DeltaTime(inDeltaTime), InputVector(inInputVector)
+	{
+		SavedLocation = inTankLocation;
+	}
+};
+
+//
+// Problem with Net_CurrentMoveAmount
+//
+USTRUCT()
+struct FSaveNetData
+{
+	GENERATED_BODY()
+
+public:
+
+	FSaveNetData();
+
+	UPROPERTY()
+	float TimeStamp;
+	UPROPERTY()
+	uint8 Net_CurrentMoveAmount;
+	UPROPERTY()
+	FVector_NetQuantize100 Net_MovedLocation;
+	UPROPERTY()
+	FQuat Net_Rotation;
+
+	FSaveNetData(float NewTimeStamp, float NewSaved_CurrnetMoveAmont, FVector NewSaved_Location, FRotator NewRotation)
+	{
+		Net_CurrentMoveAmount = static_cast<uint8>(NewSaved_CurrnetMoveAmont * 255);
+		Net_MovedLocation = NewSaved_Location;
+		Net_Rotation = FQuat(NewRotation);
+	}
+
+};
+
+
 
 UCLASS()
 class PART_3_API UTankMovementComponent : public UPawnMovementComponent
@@ -46,6 +103,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	//Interpolated coefficient used in AddFocre for smoothe movement. Important for proper replication!
 	float CurrentMoveAmount = 0.f;
 
@@ -54,12 +113,31 @@ public:
 	bool bMoveInputActive = false;
 	bool bTurnInputActive = false;
 
+
+
+	// Recive and save input vector from pawn
+	void AddInputVector(const FVector& WorldVector);
+
+	// Saved input vector for movement calculation
+	FVector PendingInput;
+
+	// Saved moves for client prediction (correction)
+	TArray<FTankSafeMove> SavedMoves;
+
+	UFUNCTION(Server, Unreliable)
+	void Server_Move(const FTankSafeMove& MoveData);
+
+
+
 	//Used by server, as an error tolerance between cilent predicted move and server move
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network")
 	float DistanceCorrection = 20.f;
 
 	APawn* PawnOwner;
 	ATankPawn* TankOwner;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float MoveSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float AccelerationForce = 1000.f;
@@ -84,7 +162,7 @@ public:
 	*/
 	UFUNCTION(Server, Unreliable)
 	//void Server_SendMove(const FSaveMove MoveData);
-	void Server_SendMove(const FSaveMove& MoveData);
+	void Server_SendMove(const FSaveMove& MoveData, const FSaveNetData& NetData);
 
 	UFUNCTION(NetMulticast, BlueprintCallable, Reliable)
 	void Multicast_SendCorrectionData(float TimeStamp, FVector CorrectedLoacation, FVector CorrectedVelocity, FRotator CorrectedRotation);
