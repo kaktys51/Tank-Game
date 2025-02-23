@@ -40,16 +40,22 @@ struct FTankSafeMove
 	GENERATED_BODY()
 
 public:
-	FTankSafeMove();
+	FTankSafeMove() : InputVector(FVector::ZeroVector), SavedRotation(FRotator::ZeroRotator), SavedLocation(FVector::ZeroVector) {};
 
 	UPROPERTY()
-	float TimeStamp;
+	float TimeStamp = 0.f;
 
 	UPROPERTY()
-	float DeltaTime;
+	float DeltaTime = 0.f;
 
 	UPROPERTY()
 	FVector InputVector;
+
+	UPROPERTY()
+	float InputRotation = 0.f;
+
+	UPROPERTY()
+	FRotator SavedRotation;
 
 	UPROPERTY()
 	FVector_NetQuantize100 SavedLocation;
@@ -105,67 +111,66 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//Interpolated coefficient used in AddFocre for smoothe movement. Important for proper replication!
-	float CurrentMoveAmount = 0.f;
+	APawn* PawnOwner;
+	ATankPawn* TankOwner;
 
 	float CurrentTurnAmount = 0.f;
 
-	bool bMoveInputActive = false;
-	bool bTurnInputActive = false;
+	// Utility values for movement replication in Tick
+	bool bIsPreformedMove = false;
+	bool bIsPreformedTurn = false;
 
 
+	// Used for replication of pawn location at simulated proxies
+	UPROPERTY(ReplicatedUsing = OnRep_SimProxyTransform)
+	FTransform SimProxyTransform;
+	
+	// Utility bool that prevent using SimProxyTransform until it's receive value from server
+	bool bIsSimProxyTransformUpdated = false;
+
+	UFUNCTION()
+	void OnRep_SimProxyTransform();
+
+	// Determines interpolation speed of SimProxyTransform (How fast replicated location applied)  
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Network|Replication")
+	float SimProxyAlpha = 10.f;
 
 	// Recive and save input vector from pawn
-	void AddInputVector(const FVector& WorldVector);
+	void AddMoveInputVector(const FVector& WorldVector);
+	
+	// Recive and save turn input value from pawn
+	void AddTurnValue(const float Direction);
 
 	// Saved input vector for movement calculation
 	FVector PendingInput;
 
+	// Saved input value for turning calculation
+	float PendingTurnInput;
+
+	// Determines a deadzone for turning, which means, lower threshold value that will be perceived as 0
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Turning")
+	float DeadZoneTurning = 0.01f;
+
 	// Saved moves for client prediction (correction)
 	TArray<FTankSafeMove> SavedMoves;
+
 
 	UFUNCTION(Server, Unreliable)
 	void Server_Move(const FTankSafeMove& MoveData);
 
+	UFUNCTION(NetMulticast, BlueprintCallable, Reliable)
+	void Multicast_CorrectionData(const FTransform& ServerTransform, float TimeStamp);
 
 
 	//Used by server, as an error tolerance between cilent predicted move and server move
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network")
 	float DistanceCorrection = 20.f;
 
-	APawn* PawnOwner;
-	ATankPawn* TankOwner;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MoveSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float AccelerationForce = 1000.f;
-
-	//Changes the speed of interpolation of acceleration 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float AccelerationDuration = 0.2f;
-
-	//Changes the speed of interpolation of hull rotation
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float RotationAccelerationDuration = 0.2f;
-
-	//Movement funcs
-
-	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
-	void Move(float Amount);
-
-	/*
-	 * As client preformed move, he sends data about this move on server.
-	 * Server apllyes this data to preform its own move, and then compares its own movement data with client.
-	 * If nescessary, calls Multicast_SendCorrectionData
-	*/
-	UFUNCTION(Server, Unreliable)
-	//void Server_SendMove(const FSaveMove MoveData);
-	void Server_SendMove(const FSaveMove& MoveData, const FSaveNetData& NetData);
-
-	UFUNCTION(NetMulticast, BlueprintCallable, Reliable)
-	void Multicast_SendCorrectionData(float TimeStamp, FVector CorrectedLoacation, FVector CorrectedVelocity, FRotator CorrectedRotation);
+	float TurnSpeed = 65.f;
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Turn(float Amount);

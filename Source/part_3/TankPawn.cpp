@@ -63,7 +63,7 @@ void ATankPawn::MoveComp(float Amount)
 	if (MovementComponent)
 	{
 		FVector ForvardVector = CapsuleComponent->GetForwardVector();
-		MovementComponent->AddInputVector(ForvardVector * Amount);
+		MovementComponent->AddMoveInputVector(ForvardVector * Amount);
 	}
 }
 
@@ -71,7 +71,7 @@ void ATankPawn::TurnComp(float Amount)
 {
 	if (MovementComponent)
 	{
-		MovementComponent->Turn(Amount);
+		MovementComponent->AddTurnValue(Amount);
 	}
 }
 

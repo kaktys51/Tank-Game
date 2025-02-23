@@ -5,7 +5,7 @@
 UTankMovementComponent::UTankMovementComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
+	SetIsReplicatedByDefault(true);
 }
 
 FSaveMove::FSaveMove()
@@ -16,9 +16,6 @@ FSaveNetData::FSaveNetData()
 {
 }
 
-FTankSafeMove::FTankSafeMove()
-{
-}
 
 void UTankMovementComponent::BeginPlay()
 {
@@ -26,8 +23,12 @@ void UTankMovementComponent::BeginPlay()
 
 	PawnOwner = GetPawnOwner();
 	TankOwner = Cast<ATankPawn>(PawnOwner);
-}
 
+	if (TankOwner->HasAuthority())
+	{
+		SimProxyTransform = TankOwner->GetActorTransform();
+	}
+}
 
 void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -37,18 +38,42 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		return;
 	}
+	
+	if (TankOwner->HasAuthority() && !UpdatedComponent->GetComponentTransform().Equals(SimProxyTransform))
+	{
+		SimProxyTransform = UpdatedComponent->GetComponentTransform();
+	}
 
+	// Location replication for simulated proxy 
+	if (!TankOwner->HasAuthority() && !TankOwner->IsLocallyControlled())
+	{
+		FVector proxyLoc = SimProxyTransform.GetLocation();
+
+		//UE_LOG(LogTemp, Warning, TEXT("SimProxyTransform: %f, %f, %f"), proxyLoc.X, proxyLoc.Y, proxyLoc.Z);
+		if (bIsSimProxyTransformUpdated)
+		{
+			FTransform CurrentTransform = UpdatedComponent->GetComponentTransform();
+
+			FVector NewLocation = FMath::VInterpTo(CurrentTransform.GetLocation(), SimProxyTransform.GetLocation(), GetWorld()->GetDeltaSeconds(), SimProxyAlpha);
+			FRotator NewRotation = FMath::RInterpTo(CurrentTransform.GetRotation().Rotator(), SimProxyTransform.GetRotation().Rotator(), GetWorld()->GetDeltaSeconds(), SimProxyAlpha);
+			FTransform NewTransform(NewRotation, NewLocation, CurrentTransform.GetScale3D());
+
+			UpdatedComponent->SetWorldTransform(NewTransform);
+		}
+	}
+
+	// Prepearing move data to send to server
+	FTankSafeMove NewMove;
+
+	// Moving forward/backward logic
 	if (!PendingInput.IsNearlyZero())
 	{
-		if (TankOwner->HasAuthority()) { return; }
-
-		UE_LOG(LogTemp, Warning, TEXT("Server MoveTick"));
-		//FVector BeforeLoc = TankOwner->GetActorLocation();
-		//UE_LOG(LogTemp, Warning, TEXT("Before: %f, %f, %f"), BeforeLoc.X, BeforeLoc.Y, BeforeLoc.Z);
+		bIsPreformedMove = true;
 
 		// Calculate movement distance 
 		FVector DesiredMovement = PendingInput.GetClampedToMaxSize(1.0f) * MoveSpeed * DeltaTime;
 
+		// Preforming movement
 		FHitResult Hit;
 		SafeMoveUpdatedComponent(DesiredMovement, UpdatedComponent->GetComponentRotation(), true, Hit);
 
@@ -62,40 +87,86 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		}
 
 		// Creating and saving move data
-		FTankSafeMove NewMove(DeltaTime, GetWorld()->GetTimeSeconds(), PendingInput, TankOwner->GetActorLocation());
-		SavedMoves.Add(NewMove);
+		NewMove.TimeStamp = GetWorld()->GetTimeSeconds();
+		NewMove.DeltaTime = DeltaTime;
+		NewMove.InputVector = PendingInput;
+		NewMove.SavedLocation = TankOwner->GetActorLocation();
 
-		//if (PawnOwner->IsLocallyControlled())
-		//{
-		//	Server_Move(NewMove);
-		//}
-
-		ENetRole LocalRole = GetOwner()->GetLocalRole();
-		if (LocalRole == ROLE_AutonomousProxy)
-		{
-			Server_Move(NewMove);
-			UE_LOG(LogTemp, Warning, TEXT("Client send"));
-		}
 	}
 
+	// Turning hull of the tank
+	if (FMath::Abs(PendingTurnInput) > DeadZoneTurning)
+	{
+		bIsPreformedTurn = true;
+
+		Turn(PendingTurnInput);
+
+		NewMove.InputRotation = PendingTurnInput;
+		NewMove.SavedRotation = TankOwner->GetActorRotation();
+
+		NewMove.SavedLocation = TankOwner->GetActorLocation();
+
+	}
+
+	// Checking if pawn is locally controlled AND if any movement or turning was made
+	if (PawnOwner->IsLocallyControlled() && !PawnOwner->HasAuthority() && (bIsPreformedMove || bIsPreformedTurn))
+	{
+		SavedMoves.Add(NewMove);
+		//Sending moving data to server
+		Server_Move(NewMove);
+	}
+
+
+	 //  ********
+	 //**** IMPORATNT !!!!! ****
+	 // after preformed movement\turning clears pending values
+	 //  ********
 	PendingInput = FVector::ZeroVector;
+	PendingTurnInput = 0.f;
+	bIsPreformedMove = false;
+	bIsPreformedTurn = false;
 }
 
-void UTankMovementComponent::AddInputVector(const FVector& WorldVector)
+void UTankMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(UTankMovementComponent, SimProxyTransform, COND_SimulatedOnly);
+}
+
+void UTankMovementComponent::OnRep_SimProxyTransform()
+{
+	bIsSimProxyTransformUpdated = true;
+}
+
+void UTankMovementComponent::AddMoveInputVector(const FVector& WorldVector)
 {
 	PendingInput += WorldVector;
+}
+
+void UTankMovementComponent::AddTurnValue(const float Direction)
+{
+	PendingTurnInput = Direction;
 }
 
 void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& MoveData)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Server exec"));
-	FVector DesiredMovement = MoveData.InputVector.GetClampedToMaxSize(1.0f) * MoveSpeed * MoveData.DeltaTime;
-	FHitResult Hit;
-	SafeMoveUpdatedComponent(DesiredMovement, UpdatedComponent->GetComponentRotation(), true, Hit);
-
-	if (Hit.IsValidBlockingHit())
+	if (!MoveData.InputVector.IsNearlyZero())
 	{
-		SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
+		FVector DesiredMovement = MoveData.InputVector.GetClampedToMaxSize(1.0f) * MoveSpeed * MoveData.DeltaTime;
+		FHitResult Hit;
+		SafeMoveUpdatedComponent(DesiredMovement, UpdatedComponent->GetComponentRotation(), true, Hit);
+
+		if (Hit.IsValidBlockingHit())
+		{
+			SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
+		}
+	}
+
+	if (FMath::Abs(MoveData.InputRotation) > DeadZoneTurning)
+	{
+		Turn(MoveData.InputRotation);
 	}
 
 	FVector ServerLocation = PawnOwner->GetActorLocation();
@@ -105,126 +176,50 @@ void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& Mov
 	float DistanceError = FVector::DistSquared(ServerLocation, ClientLocation);
 	float CorrectionValue = FMath::Square(DistanceCorrection);
 
-}
-
-void UTankMovementComponent::Move(float Amount)
-{
-	FVector ForvardVector = TankOwner->CapsuleComponent->GetForwardVector();
-
-	CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, Amount, GetWorld()->GetDeltaSeconds(), AccelerationDuration);
-	TankOwner->CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * TankOwner->CapsuleComponent->GetMass());
-	
-
-	//only for testing
-	//CurrentMoveAmount = 0.f;
-
-	bMoveInputActive = true;
-
-	FVector ActorLocation = TankOwner->GetActorLocation();
-	FVector TankVelocity = TankOwner->CapsuleComponent->GetPhysicsLinearVelocity();
-	FRotator Rotation = TankOwner->GetActorRotation();
-
-	FSaveMove MoveData(GetWorld()->GetTimeSeconds(),CurrentMoveAmount, TankOwner->GetActorLocation(), TankVelocity, Rotation);
-	FSaveNetData NetData(GetWorld()->GetTimeSeconds(), CurrentMoveAmount, TankOwner->GetActorLocation(), Rotation);
-
-	PendingMoves.Add(MoveData);
-
-	if (!TankOwner->HasAuthority())
-	{
-		Server_SendMove(MoveData, NetData);
-	}
-}
-
-void UTankMovementComponent::Server_SendMove_Implementation(const FSaveMove& MoveData, const FSaveNetData& NetData)
-{
-	UE_LOG(LogTemp, Warning, TEXT("TimeStamp: %f"), MoveData.TimeStamp);
-	FVector ForvardVector = TankOwner->CapsuleComponent->GetForwardVector();
-
-	
-	CurrentMoveAmount = MoveData.Saved_CurrentMoveAmount;
-	//CurrentMoveAmount = NetData.Net_CurrentMoveAmount / 255.f;
-	TankOwner->CapsuleComponent->AddForce(ForvardVector * CurrentMoveAmount * AccelerationForce * TankOwner->CapsuleComponent->GetMass());
-
-	//only for testing
-	//CurrentMoveAmount = 0.f;
-
-	FVector AuthVelocity = TankOwner->CapsuleComponent->GetPhysicsLinearVelocity();
-	FVector AuthLocation = TankOwner->GetActorLocation();
-	FRotator AuthRotation = TankOwner->GetActorRotation();
-
-	float DistanceError = FVector::DistSquared(AuthLocation, MoveData.Saved_MovedLocation);
-	//float DistanceError = FVector::DistSquared(AuthLocation, NetData.Net_MovedLocation);
-
-	//UE_LOG(LogTemp, Warning, TEXT("Server location: %f, %f, %f"), AuthLocation.X, AuthLocation.Y, AuthLocation.Z);
-	//UE_LOG(LogTemp, Warning, TEXT("Client location: %f, %f, %f"), MoveData.Saved_MovedLocation.X, MoveData.Saved_MovedLocation.Y, MoveData.Saved_MovedLocation.Z);
-
-	float CorrectionValue = FMath::Square(DistanceCorrection);
-
 	UE_LOG(LogTemp, Warning, TEXT("DistanceError: %f"), DistanceError);
-
-	//Send correction if needed 
 	if (DistanceError >= CorrectionValue)
 	{
-		if(TankOwner->HasAuthority())
-		{
-			Multicast_SendCorrectionData(MoveData.TimeStamp, AuthLocation, AuthVelocity, AuthRotation);
-		}
+		Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
 	}
-
 }
 
-void UTankMovementComponent::Multicast_SendCorrectionData_Implementation(float TimeStamp, FVector CorrectedLoacation, FVector CorrectedVelocity, FRotator CorrectedRotation)
+void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTransform& ServerTransform, float TimeStamp)
 {
-	//if (TankOwner->IsLocallyControlled()) return;
-
-	ENetRole LocalRole = GetOwner()->GetLocalRole();
-
-	if (LocalRole == ROLE_Authority)
+	if (!TankOwner->HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Executing on the SERVER (Authority)"));
+		UpdatedComponent->SetWorldTransform(ServerTransform);
+
+		TArray<FTankSafeMove> MovesToReplay;
+		for (const FTankSafeMove& Move : SavedMoves)
+		{
+			if (Move.TimeStamp > TimeStamp)
+			{
+				MovesToReplay.Add(Move);
+			}
+		}
+		SavedMoves = MovesToReplay;
+
+		for (const FTankSafeMove& Move : SavedMoves)
+		{
+			FVector DesiredMovement = Move.InputVector.GetClampedToMaxSize(1.0f) * MoveSpeed * Move.DeltaTime;
+			FHitResult Hit;
+			SafeMoveUpdatedComponent(DesiredMovement, UpdatedComponent->GetComponentRotation(), true, Hit);
+			if (Hit.IsValidBlockingHit())
+			{
+				SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
+			}
+		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Executing on the CLIENT (Simulated)"));
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Client Corrected!!!"));
-	//if (!TankOwner->HasAuthority())
-	if(!TankOwner->HasAuthority())
-	{
-		TankOwner->SetActorLocation(CorrectedLoacation);
-		TankOwner->SetActorRotation(CorrectedRotation);
-		TankOwner->CapsuleComponent->SetPhysicsLinearVelocity(CorrectedVelocity);
-
-	}
-
-	//PendingMoves.Empty();
-
-	//TArray<FSaveMove> MovesToReplay;
-	//for (const FSaveMove& Move : PendingMoves)
-	//{
-	//	if (Move.TimeStamp > TimeStamp)
-	//	{
-	//		MovesToReplay.Add(Move);
-	//	}
-	//}
-	//PendingMoves = MovesToReplay;
-
-	//// Пересчитываем оставшиеся ходы (replay)
-	//for (const FSaveMove& Move : PendingMoves)
-	//{
-	//	FVector ForwardVector = TankOwner->CapsuleComponent->GetForwardVector();
-	//	TankOwner->CapsuleComponent->AddForce(ForwardVector * Move.Saved_CurrentMoveAmount * AccelerationForce * TankOwner->CapsuleComponent->GetMass());
-	//}
-
 }
 
 void UTankMovementComponent::Turn(float Amount)
 {
-	CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, Amount, GetWorld()->GetDeltaSeconds(), RotationAccelerationDuration);
+	//CurrentTurnAmount = FMath::FInterpTo(CurrentTurnAmount, Amount, GetWorld()->GetDeltaSeconds(), RotationAccelerationDuration);
 
-	FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
+	float DeltaRotation = Amount * TurnSpeed * GetWorld()->GetDeltaSeconds();
+	FRotator Rotation = FRotator(0.f, DeltaRotation, 0.f);
+
+	//FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
 	TankOwner->AddActorLocalRotation(Rotation);
 
-	bTurnInputActive = true;
 }
