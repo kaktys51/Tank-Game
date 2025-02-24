@@ -8,15 +8,6 @@ UTankMovementComponent::UTankMovementComponent()
 	SetIsReplicatedByDefault(true);
 }
 
-FSaveMove::FSaveMove()
-{
-}
-
-FSaveNetData::FSaveNetData()
-{
-}
-
-
 void UTankMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();

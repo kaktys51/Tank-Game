@@ -9,32 +9,6 @@
 class ATankPawn;
 
 USTRUCT()
-struct FSaveMove
-{
-	GENERATED_BODY()
-
-public:
-
-	FSaveMove();
-
-	UPROPERTY()
-	float TimeStamp;
-	UPROPERTY()
-	float Saved_CurrentMoveAmount;
-	UPROPERTY()
-	FVector Saved_MovedLocation;
-	UPROPERTY()
-	FVector Saved_Velocity;
-	UPROPERTY()
-	FRotator Saved_Rotation;
-
-	FSaveMove(float NewTimeStamp, float NewSaved_CurrnetMoveAmont, FVector NewSaved_Location, FVector NewSaved_Velocity, FRotator NewRotation) :
-		TimeStamp(NewTimeStamp), Saved_CurrentMoveAmount(NewSaved_CurrnetMoveAmont), Saved_MovedLocation(NewSaved_Location), Saved_Velocity(NewSaved_Velocity), Saved_Rotation(NewRotation)
-	{}
-
-};
-
-USTRUCT()
 struct FTankSafeMove
 {
 	GENERATED_BODY()
@@ -65,38 +39,6 @@ public:
 		SavedLocation = inTankLocation;
 	}
 };
-
-//
-// Problem with Net_CurrentMoveAmount
-//
-USTRUCT()
-struct FSaveNetData
-{
-	GENERATED_BODY()
-
-public:
-
-	FSaveNetData();
-
-	UPROPERTY()
-	float TimeStamp;
-	UPROPERTY()
-	uint8 Net_CurrentMoveAmount;
-	UPROPERTY()
-	FVector_NetQuantize100 Net_MovedLocation;
-	UPROPERTY()
-	FQuat Net_Rotation;
-
-	FSaveNetData(float NewTimeStamp, float NewSaved_CurrnetMoveAmont, FVector NewSaved_Location, FRotator NewRotation)
-	{
-		Net_CurrentMoveAmount = static_cast<uint8>(NewSaved_CurrnetMoveAmont * 255);
-		Net_MovedLocation = NewSaved_Location;
-		Net_Rotation = FQuat(NewRotation);
-	}
-
-};
-
-
 
 UCLASS()
 class PART_3_API UTankMovementComponent : public UPawnMovementComponent
@@ -175,7 +117,4 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Turn(float Amount);
 
-protected:
-
-	TArray<FSaveMove> PendingMoves;
 };
