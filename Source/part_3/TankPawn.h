@@ -44,6 +44,15 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UTankMovementComponent> MovementComponent;
 
+
+	//**************************************************************************
+	// 
+	// for smoothing networ correction Tests
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
+	TObjectPtr<UStaticMeshComponent> SmoothBoxTest;
+	//**************************************************************************
+
+
 	//Timer for handle reload
 	FTimerHandle ReloadTimer;
 

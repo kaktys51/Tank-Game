@@ -18,6 +18,10 @@ ATankPawn::ATankPawn() : Super()
 	MovementComponent = CreateDefaultSubobject<UTankMovementComponent>(TEXT("TankMovementComponent"));
 	MovementComponent->UpdatedComponent = CapsuleComponent;
 
+	// for smoothing networ correction Tests
+	SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
+	SmoothBoxTest->SetupAttachment(RootComponent);
+
 	bTurretToCursorState = true;
 
 }

@@ -19,6 +19,8 @@ void UTankMovementComponent::BeginPlay()
 	{
 		SimProxyTransform = TankOwner->GetActorTransform();
 	}
+
+	SpringArmOrigin = TankOwner->SpringArm->GetRelativeTransform();
 }
 
 void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -107,6 +109,10 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		Server_Move(NewMove);
 	}
 
+	if (bIsVisualCorrectionActive)
+	{
+		VisualCorrectionSmooting(DeltaTime);
+	}
 
 	 //  ********
 	 //**** IMPORATNT !!!!! ****
@@ -178,6 +184,12 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 {
 	if (!TankOwner->HasAuthority())
 	{
+		// Saving old location for smoothe intep
+		UStaticMeshComponent* BaseMeshTest = TankOwner->SmoothBoxTest;
+
+		PreviousTransformBox = BaseMeshTest->GetComponentTransform();
+		
+
 		UpdatedComponent->SetWorldTransform(ServerTransform);
 
 		TArray<FTankSafeMove> MovesToReplay;
@@ -200,7 +212,39 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 				SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
 			}
 		}
+
+		// Saving latest corrected location form smoother transform
+		TargetTransformBox = BaseMeshTest->GetComponentTransform();
+
+		// Calculating offset for further smoothing
+		OffsetBoxLocation = PreviousTransformBox.GetLocation() - TargetTransformBox.GetLocation();
+		
+		BaseMeshTest->SetRelativeLocation(OffsetBoxLocation);
+		bIsVisualCorrectionActive = true;
 	}
+}
+
+void UTankMovementComponent::VisualCorrectionSmooting(float DeltaTime)
+{
+	if (!TankOwner) return;
+
+	UStaticMeshComponent* BaseMeshTest = TankOwner->SmoothBoxTest;
+	if (!BaseMeshTest) return;
+
+	FVector CurrentBaseRelativeLocation = BaseMeshTest->GetRelativeLocation();
+
+	if (!CurrentBaseRelativeLocation.IsNearlyZero())
+	{
+		FVector NewLocation = FMath::VInterpTo(CurrentBaseRelativeLocation, FVector::ZeroVector, DeltaTime, SmoothingSpeed);
+		BaseMeshTest->SetRelativeLocation(NewLocation);
+
+	}
+	else
+	{
+		BaseMeshTest->SetRelativeLocation(FVector::ZeroVector);
+		bIsVisualCorrectionActive = false;
+	}
+
 }
 
 void UTankMovementComponent::Turn(float Amount)

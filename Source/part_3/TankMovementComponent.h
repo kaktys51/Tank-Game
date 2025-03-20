@@ -117,4 +117,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Turn(float Amount);
 
+	//************************************
+	//
+	// Network smoothing tests variables
+
+	void VisualCorrectionSmooting(float DeltaTime);
+
+	FTransform PreviousTransformBox;
+	FTransform TargetTransformBox;	
+
+	FTransform SpringArmOrigin;
+
+	FVector OffsetBoxLocation;
+	FVector OffsetArmLocation;
+
+	// Determines speed of smoothing interpolatinon (visual)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")
+	float SmoothingSpeed = 10.f;
+
+	bool bIsVisualCorrectionActive = false;
+
+
 };
