@@ -21,6 +21,11 @@ void UTankMovementComponent::BeginPlay()
 	}
 
 	SpringArmOrigin = TankOwner->SpringArm->GetRelativeTransform();
+
+	// test visual smoothing setup
+	BodyVisualLocation = TankOwner->GetActorLocation();
+	TankOwner->SmoothBoxTest->SetWorldLocation(BodyVisualLocation);
+	bIsUpdateVisualActive = true;
 }
 
 void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -114,6 +119,12 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		VisualCorrectionSmooting(DeltaTime);
 	}
 
+	// Visual interpolation of tank hull
+	if (bIsUpdateVisualActive)
+	{
+		UpdateVisual(DeltaTime);
+	}
+
 	 //  ********
 	 //**** IMPORATNT !!!!! ****
 	 // after preformed movement\turning clears pending values
@@ -129,6 +140,21 @@ void UTankMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(UTankMovementComponent, SimProxyTransform, COND_SimulatedOnly);
+}
+
+void UTankMovementComponent::UpdateVisual(float DeltaTime)
+{
+	if (!TankOwner) return;
+
+	FVector OwnerLocation = TankOwner->GetActorLocation();
+
+	//UE_LOG(LogTemp, Warning, TEXT("BoxTestLocation: %f, %f, %f "), BoxTestLocation.X, BoxTestLocation.Y, BoxTestLocation.Z);
+
+	FVector NewLocation = FMath::VInterpTo(BodyVisualLocation, OwnerLocation, DeltaTime, VisualInterpolationSpeed);
+
+	TankOwner->SmoothBoxTest->SetWorldLocation(NewLocation);
+
+	BodyVisualLocation = NewLocation;
 }
 
 void UTankMovementComponent::OnRep_SimProxyTransform()
@@ -184,10 +210,10 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 {
 	if (!TankOwner->HasAuthority())
 	{
-		// Saving old location for smoothe intep
-		UStaticMeshComponent* BaseMeshTest = TankOwner->SmoothBoxTest;
+		//// Saving old location for smoothe intep
+		//UStaticMeshComponent* BaseMeshTest = TankOwner->SmoothBoxTest;
 
-		PreviousTransformBox = BaseMeshTest->GetComponentTransform();
+		//PreviousTransformBox = BaseMeshTest->GetComponentTransform();
 		
 
 		UpdatedComponent->SetWorldTransform(ServerTransform);
@@ -213,14 +239,14 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 			}
 		}
 
-		// Saving latest corrected location form smoother transform
-		TargetTransformBox = BaseMeshTest->GetComponentTransform();
+		//// Saving latest corrected location form smoother transform
+		//TargetTransformBox = BaseMeshTest->GetComponentTransform();
 
-		// Calculating offset for further smoothing
-		OffsetBoxLocation = PreviousTransformBox.GetLocation() - TargetTransformBox.GetLocation();
-		
-		BaseMeshTest->SetRelativeLocation(OffsetBoxLocation);
-		bIsVisualCorrectionActive = true;
+		//// Calculating offset for further smoothing
+		//OffsetBoxLocation = PreviousTransformBox.GetLocation() - TargetTransformBox.GetLocation();
+		//
+		//BaseMeshTest->SetRelativeLocation(OffsetBoxLocation);
+		//bIsVisualCorrectionActive = true;
 	}
 }
 

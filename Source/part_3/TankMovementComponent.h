@@ -138,4 +138,16 @@ public:
 	bool bIsVisualCorrectionActive = false;
 
 
+	FVector BodyVisualLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	bool bIsUpdateVisualActive = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Visual")
+	float VisualInterpolationSpeed = 6.f;
+
+	// Update visual location of actor
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void UpdateVisual(float DeltaTime);
+
 };

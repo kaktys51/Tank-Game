@@ -9,8 +9,11 @@ ATankPawn::ATankPawn() : Super()
 	bReplicates = true;
 	SetReplicateMovement(false);
 
+	SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(CapsuleComponent);
+	//SpringArm->SetupAttachment(CapsuleComponent);
+	SpringArm->SetupAttachment(SmoothBoxTest);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -19,8 +22,8 @@ ATankPawn::ATankPawn() : Super()
 	MovementComponent->UpdatedComponent = CapsuleComponent;
 
 	// for smoothing networ correction Tests
-	SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
-	SmoothBoxTest->SetupAttachment(RootComponent);
+	//SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
+	//SmoothBoxTest->SetupAttachment(RootComponent);
 
 	bTurretToCursorState = true;
 
