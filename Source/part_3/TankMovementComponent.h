@@ -112,7 +112,7 @@ public:
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network")
 	float DistanceCorrection = 20.f;
 
-	//Used by server, as an error tolerance between cilent predicted turn and server turn
+	//Used by server, as an error tolerance between cilent predicted turn and server move
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network", meta = (ClampMin = "0.0", ClampMax = "360.0"))
 	float TurnCorrection = 5.f;
 
@@ -128,8 +128,6 @@ public:
 	//************************************
 	//
 	// Network smoothing tests variables
-
-	void VisualCorrectionSmooting(float DeltaTime);
 
 	// Determines speed of smoothing interpolatinon (visual)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")

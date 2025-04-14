@@ -9,8 +9,6 @@ ATankPawn::ATankPawn() : Super()
 	bReplicates = true;
 	SetReplicateMovement(false);
 
-	SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
-
 	TankVisualRoot = CreateDefaultSubobject<USceneComponent>(TEXT("TankVisualRoot"));
 
 	BaseMesh->SetupAttachment(TankVisualRoot);
@@ -25,10 +23,6 @@ ATankPawn::ATankPawn() : Super()
 
 	MovementComponent = CreateDefaultSubobject<UTankMovementComponent>(TEXT("TankMovementComponent"));
 	MovementComponent->UpdatedComponent = CapsuleComponent;
-
-	// for smoothing networ correction Tests
-	//SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
-	//SmoothBoxTest->SetupAttachment(RootComponent);
 
 	bTurretToCursorState = true;
 
@@ -53,7 +47,6 @@ void ATankPawn::BeginPlay()
 	}
 
 	// Setting up VisualRoot to ActorRoot when game starting 
-	SmoothBoxTest->SetWorldTransform(GetTransform());
 	TankVisualRoot->SetWorldTransform(GetTransform());
 }
 

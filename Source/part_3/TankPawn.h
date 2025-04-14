@@ -47,9 +47,6 @@ public:
 
 	//**************************************************************************
 	// 
-	// for smoothing networ correction Tests
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Replicated, Category = "Default")
-	TObjectPtr<UStaticMeshComponent> SmoothBoxTest;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USceneComponent> TankVisualRoot;
