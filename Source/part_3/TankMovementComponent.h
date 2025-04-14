@@ -96,6 +96,10 @@ public:
 	// Saved moves for client prediction (correction)
 	TArray<FTankSafeMove> SavedMoves;
 
+	// Saves the last processed timestamp from a client move to prevent confirming moves that arrive out of order
+	UPROPERTY()
+	float LastProcessedMoveTimeStamp = 0.f;
+
 
 	UFUNCTION(Server, Unreliable)
 	void Server_Move(const FTankSafeMove& MoveData);
@@ -107,6 +111,10 @@ public:
 	//Used by server, as an error tolerance between cilent predicted move and server move
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network")
 	float DistanceCorrection = 20.f;
+
+	//Used by server, as an error tolerance between cilent predicted turn and server turn
+	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network", meta = (ClampMin = "0.0", ClampMax = "360.0"))
+	float TurnCorrection = 5.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MoveSpeed = 500.f;
@@ -123,14 +131,6 @@ public:
 
 	void VisualCorrectionSmooting(float DeltaTime);
 
-	FTransform PreviousTransformBox;
-	FTransform TargetTransformBox;	
-
-	FTransform SpringArmOrigin;
-
-	FVector OffsetBoxLocation;
-	FVector OffsetArmLocation;
-
 	// Determines speed of smoothing interpolatinon (visual)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network")
 	float SmoothingSpeed = 10.f;
@@ -138,10 +138,31 @@ public:
 	bool bIsVisualCorrectionActive = false;
 
 
+	// **********************
+
 	FVector BodyVisualLocation;
+	FQuat BodyVisualRotation;
+
+	float LastCorrectionTime = 0.f;
+
+	// Specifies how often the server can send correction RPCs.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network|Replication")
+	float CorrectionCooldown = 0.5f;
+
+	// Changes apha curveture for EaseOut correction interpolation 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	float CrorrectAphaCurveture = 1.5f;
+
+	float CorrectInterpTimeElapsded = 0.f;
+
+	// Time of correction interpolation 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	float CorrectInterpDuration = 0.1f; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
 	bool bIsUpdateVisualActive = false;
+
+	bool bIsCorrectionActive = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Visual")
 	float VisualInterpolationSpeed = 6.f;

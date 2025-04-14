@@ -11,9 +11,14 @@ ATankPawn::ATankPawn() : Super()
 
 	SmoothBoxTest = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SmoothBoxTest"));
 
+	TankVisualRoot = CreateDefaultSubobject<USceneComponent>(TEXT("TankVisualRoot"));
+
+	BaseMesh->SetupAttachment(TankVisualRoot);
+	TurretMesh->SetupAttachment(TankVisualRoot);
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	//SpringArm->SetupAttachment(CapsuleComponent);
-	SpringArm->SetupAttachment(SmoothBoxTest);
+	SpringArm->SetupAttachment(TankVisualRoot);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -46,6 +51,10 @@ void ATankPawn::BeginPlay()
 			DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
 		}
 	}
+
+	// Setting up VisualRoot to ActorRoot when game starting 
+	SmoothBoxTest->SetWorldTransform(GetTransform());
+	TankVisualRoot->SetWorldTransform(GetTransform());
 }
 
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

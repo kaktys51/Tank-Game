@@ -14,17 +14,17 @@ void UTankMovementComponent::BeginPlay()
 
 	PawnOwner = GetPawnOwner();
 	TankOwner = Cast<ATankPawn>(PawnOwner);
+	FTransform OwnerTransform = TankOwner->GetTransform();
 
 	if (TankOwner->HasAuthority())
 	{
-		SimProxyTransform = TankOwner->GetActorTransform();
+		SimProxyTransform = OwnerTransform;
 	}
 
-	SpringArmOrigin = TankOwner->SpringArm->GetRelativeTransform();
+	// Visual smoothing setup
+	BodyVisualLocation = OwnerTransform.GetLocation();
+	BodyVisualRotation = OwnerTransform.GetRotation();
 
-	// test visual smoothing setup
-	BodyVisualLocation = TankOwner->GetActorLocation();
-	TankOwner->SmoothBoxTest->SetWorldLocation(BodyVisualLocation);
 	bIsUpdateVisualActive = true;
 }
 
@@ -63,6 +63,9 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// Prepearing move data to send to server
 	FTankSafeMove NewMove;
 
+	NewMove.TimeStamp = GetWorld()->GetTimeSeconds();
+	NewMove.DeltaTime = DeltaTime;
+
 	// Moving forward/backward logic
 	if (!PendingInput.IsNearlyZero())
 	{
@@ -85,10 +88,9 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		}
 
 		// Creating and saving move data
-		NewMove.TimeStamp = GetWorld()->GetTimeSeconds();
-		NewMove.DeltaTime = DeltaTime;
 		NewMove.InputVector = PendingInput;
 		NewMove.SavedLocation = TankOwner->GetActorLocation();
+		NewMove.SavedRotation = TankOwner->GetActorRotation();
 
 	}
 
@@ -101,7 +103,6 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 		NewMove.InputRotation = PendingTurnInput;
 		NewMove.SavedRotation = TankOwner->GetActorRotation();
-
 		NewMove.SavedLocation = TankOwner->GetActorLocation();
 
 	}
@@ -145,16 +146,46 @@ void UTankMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 void UTankMovementComponent::UpdateVisual(float DeltaTime)
 {
 	if (!TankOwner) return;
+	
+	if (bIsCorrectionActive)
+	{
+		//Smoothe interpolation after correction from VisualRoot to UpdateComponent (actor Root)
 
-	FVector OwnerLocation = TankOwner->GetActorLocation();
+		CorrectInterpTimeElapsded += DeltaTime;
+		float Alpha = FMath::Clamp(CorrectInterpTimeElapsded / CorrectInterpDuration, 0.f, 1.f);
 
-	//UE_LOG(LogTemp, Warning, TEXT("BoxTestLocation: %f, %f, %f "), BoxTestLocation.X, BoxTestLocation.Y, BoxTestLocation.Z);
+		FVector OwnerLocation = TankOwner->GetActorLocation();
+		FQuat OwnerRotation = TankOwner->GetActorRotation().Quaternion();
 
-	FVector NewLocation = FMath::VInterpTo(BodyVisualLocation, OwnerLocation, DeltaTime, VisualInterpolationSpeed);
+		FVector NewLocation = FMath::Lerp(BodyVisualLocation, OwnerLocation, FMath::InterpEaseInOut(0.0f, 1.0f, Alpha, CrorrectAphaCurveture));
+		FQuat NewRotation = FQuat::Slerp(BodyVisualRotation, OwnerRotation, Alpha);
 
-	TankOwner->SmoothBoxTest->SetWorldLocation(NewLocation);
+		TankOwner->TankVisualRoot->SetWorldLocation(NewLocation);
+		TankOwner->TankVisualRoot->SetWorldRotation(NewRotation);
 
-	BodyVisualLocation = NewLocation;
+		TankOwner->SmoothBoxTest->SetWorldLocation(NewLocation);
+
+		if (Alpha >= 1.f)
+		{
+			bIsCorrectionActive = false;
+			CorrectInterpTimeElapsded = 0.f;
+		}
+	}
+	else
+	{
+		// If correction interpolation not active, just folowing UpdateComponent
+
+		FTransform OwnerTransform = TankOwner->GetTransform();
+
+		BodyVisualLocation = OwnerTransform.GetLocation();
+		BodyVisualRotation = OwnerTransform.GetRotation();
+
+		TankOwner->SmoothBoxTest->SetWorldLocation(OwnerTransform.GetLocation());
+
+		TankOwner->TankVisualRoot->SetWorldLocation(BodyVisualLocation);
+		TankOwner->TankVisualRoot->SetWorldRotation(BodyVisualRotation);
+
+	}
 }
 
 void UTankMovementComponent::OnRep_SimProxyTransform()
@@ -174,6 +205,13 @@ void UTankMovementComponent::AddTurnValue(const float Direction)
 
 void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& MoveData)
 {
+	// добавить проверку не сортированных движений 
+	// добавить велосити  ипроверку через расчет велосити ?
+
+	if (MoveData.TimeStamp <= LastProcessedMoveTimeStamp) return;
+
+	LastProcessedMoveTimeStamp = MoveData.TimeStamp;
+
 	UE_LOG(LogTemp, Warning, TEXT("Server exec"));
 	if (!MoveData.InputVector.IsNearlyZero())
 	{
@@ -192,6 +230,7 @@ void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& Mov
 		Turn(MoveData.InputRotation);
 	}
 
+	// Checking for distance error, if not found, checking for rotation error
 	FVector ServerLocation = PawnOwner->GetActorLocation();
 	FVector ClientLocation = MoveData.SavedLocation;
 
@@ -200,22 +239,52 @@ void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& Mov
 	float CorrectionValue = FMath::Square(DistanceCorrection);
 
 	UE_LOG(LogTemp, Warning, TEXT("DistanceError: %f"), DistanceError);
-	if (DistanceError >= CorrectionValue)
+
+	float CurrentTime = GetWorld()->GetTimeSeconds();
+
+	if (DistanceError >= CorrectionValue && (CurrentTime - LastCorrectionTime) > CorrectionCooldown)
 	{
+		LastCorrectionTime = CurrentTime;
 		Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
+		return;
 	}
+
+	// If distance was in error tolerance, checking for rotation error
+	FRotator ServerRotation = PawnOwner->GetActorRotation();
+	FRotator ClientRotation = MoveData.SavedRotation;
+
+	//FRotator DeltaRotation = ServerRotation - ClientRotation;
+
+	//float DeltaYaw = FMath::Abs(DeltaRotation.Yaw);
+	//float DeltaPitch = FMath::Abs(DeltaRotation.Pitch);
+	//float DeltaRoll = FMath::Abs(DeltaRotation.Roll);
+
+	float YawDifference = FMath::FindDeltaAngleDegrees(ServerRotation.Yaw, ClientRotation.Yaw);
+	float PitchDifference = FMath::FindDeltaAngleDegrees(ServerRotation.Pitch, ClientRotation.Pitch);
+	float RollDifference = FMath::FindDeltaAngleDegrees(ServerRotation.Roll, ClientRotation.Roll);
+
+	float AbsYawDiff = FMath::Abs(YawDifference);
+	float AbsPitchDiff = FMath::Abs(PitchDifference);
+	float AbsRollDiff = FMath::Abs(RollDifference);
+
+	if (AbsYawDiff > TurnCorrection || AbsPitchDiff > TurnCorrection || AbsRollDiff > TurnCorrection && (CurrentTime - LastCorrectionTime) > CorrectionCooldown)
+	{
+		LastCorrectionTime = CurrentTime;
+			Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
+			return;
+	}
+	//if (DeltaYaw > TurnCorrection || DeltaPitch > TurnCorrection || DeltaRoll > TurnCorrection && (CurrentTime - LastCorrectionTime) > CorrectionCooldown)
+	//{
+	//	LastCorrectionTime = CurrentTime;
+	//	Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
+	//	return;
+	//}
 }
 
 void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTransform& ServerTransform, float TimeStamp)
 {
 	if (!TankOwner->HasAuthority())
 	{
-		//// Saving old location for smoothe intep
-		//UStaticMeshComponent* BaseMeshTest = TankOwner->SmoothBoxTest;
-
-		//PreviousTransformBox = BaseMeshTest->GetComponentTransform();
-		
-
 		UpdatedComponent->SetWorldTransform(ServerTransform);
 
 		TArray<FTankSafeMove> MovesToReplay;
@@ -239,14 +308,8 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 			}
 		}
 
-		//// Saving latest corrected location form smoother transform
-		//TargetTransformBox = BaseMeshTest->GetComponentTransform();
+		bIsCorrectionActive = true;
 
-		//// Calculating offset for further smoothing
-		//OffsetBoxLocation = PreviousTransformBox.GetLocation() - TargetTransformBox.GetLocation();
-		//
-		//BaseMeshTest->SetRelativeLocation(OffsetBoxLocation);
-		//bIsVisualCorrectionActive = true;
 	}
 }
 
@@ -282,5 +345,5 @@ void UTankMovementComponent::Turn(float Amount)
 
 	//FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
 	TankOwner->AddActorLocalRotation(Rotation);
-
+	
 }
