@@ -52,8 +52,8 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		{
 			FTransform CurrentTransform = UpdatedComponent->GetComponentTransform();
 
-			FVector NewLocation = FMath::VInterpTo(CurrentTransform.GetLocation(), SimProxyTransform.GetLocation(), GetWorld()->GetDeltaSeconds(), SimProxyAlpha);
-			FRotator NewRotation = FMath::RInterpTo(CurrentTransform.GetRotation().Rotator(), SimProxyTransform.GetRotation().Rotator(), GetWorld()->GetDeltaSeconds(), SimProxyAlpha);
+			FVector NewLocation = FMath::VInterpTo(CurrentTransform.GetLocation(), SimProxyTransform.GetLocation(), DeltaTime, SimProxyAlpha);
+			FRotator NewRotation = FMath::RInterpTo(CurrentTransform.GetRotation().Rotator(), SimProxyTransform.GetRotation().Rotator(), DeltaTime, SimProxyAlpha);
 			FTransform NewTransform(NewRotation, NewLocation, CurrentTransform.GetScale3D());
 
 			UpdatedComponent->SetWorldTransform(NewTransform);
