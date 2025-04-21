@@ -107,12 +107,14 @@ public:
 	UFUNCTION(NetMulticast, BlueprintCallable, Reliable)
 	void Multicast_CorrectionData(const FTransform& ServerTransform, float TimeStamp);
 
+	// Utility value, used for smoothing correction
+	float CurrentCorrectionDistance = 0.f;
 
-	//Used by server, as an error tolerance between cilent predicted move and server move
+	// Used by server, as an error tolerance between cilent predicted move and server move
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network")
 	float DistanceCorrection = 20.f;
 
-	//Used by server, as an error tolerance between cilent predicted turn and server move
+	// Used by server, as an error tolerance between cilent predicted turn and server move
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Network", meta = (ClampMin = "0.0", ClampMax = "360.0"))
 	float TurnCorrection = 5.f;
 
@@ -156,6 +158,19 @@ public:
 	// Time of correction interpolation 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
 	float CorrectInterpDuration = 0.1f; 
+
+	// Minimal time for correction duration
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	float MinDuration = 0.1f;
+	// Max time for correction duratuion
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	float MaxDuration = 0.6f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	float DistanceThresholdLow = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
+	float DistanceThresholdHigh = 250.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Visual")
 	bool bIsUpdateVisualActive = false;

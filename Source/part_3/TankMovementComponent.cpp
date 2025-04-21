@@ -146,8 +146,31 @@ void UTankMovementComponent::UpdateVisual(float DeltaTime)
 	{
 		//Smoothe interpolation after correction from VisualRoot to UpdateComponent (actor Root)
 
+		float AdaptiveInterpDuration = CorrectInterpDuration;
+
+		if (CurrentCorrectionDistance <= DistanceThresholdLow)
+		{
+			// Small correction, use longer/smoother duration
+			AdaptiveInterpDuration = MaxDuration;
+		}
+		else if (CurrentCorrectionDistance >= DistanceThresholdHigh)
+		{
+			// Large correction, use shorter duration
+			AdaptiveInterpDuration = MinDuration;
+		}
+		else
+		{
+			// Medium correction, scale duration inversely with distance
+			float DistanceRatio = (CurrentCorrectionDistance - DistanceThresholdLow) /
+				(DistanceThresholdHigh - DistanceThresholdLow);
+
+			// Inverse mapping: higher distance = lower duration
+			AdaptiveInterpDuration = MaxDuration - DistanceRatio * (MaxDuration - MinDuration);
+		}
+
 		CorrectInterpTimeElapsded += DeltaTime;
-		float Alpha = FMath::Clamp(CorrectInterpTimeElapsded / CorrectInterpDuration, 0.f, 1.f);
+		//float Alpha = FMath::Clamp(CorrectInterpTimeElapsded / CorrectInterpDuration, 0.f, 1.f);
+		float Alpha = FMath::Clamp(CorrectInterpTimeElapsded / AdaptiveInterpDuration, 0.f, 1.f);
 
 		FVector OwnerLocation = TankOwner->GetActorLocation();
 		FQuat OwnerRotation = TankOwner->GetActorRotation().Quaternion();
@@ -261,6 +284,11 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 {
 	if (!TankOwner->HasAuthority())
 	{
+		FVector CurrentLocation = TankOwner->GetActorLocation();
+		FVector ServerLocation = ServerTransform.GetLocation();
+
+		CurrentCorrectionDistance = FVector::Dist(CurrentLocation, ServerLocation);
+
 		UpdatedComponent->SetWorldTransform(ServerTransform);
 
 		TArray<FTankSafeMove> MovesToReplay;
