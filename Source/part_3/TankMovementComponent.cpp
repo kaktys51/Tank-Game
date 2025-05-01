@@ -42,22 +42,10 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		SimProxyTransform = UpdatedComponent->GetComponentTransform();
 	}
 
-	// Location replication for simulated proxy 
-	if (!TankOwner->HasAuthority() && !TankOwner->IsLocallyControlled())
+	// Simulated proxy movement
+	if (bIsSimProxyTransformUpdated)
 	{
-		FVector proxyLoc = SimProxyTransform.GetLocation();
-
-		//UE_LOG(LogTemp, Warning, TEXT("SimProxyTransform: %f, %f, %f"), proxyLoc.X, proxyLoc.Y, proxyLoc.Z);
-		if (bIsSimProxyTransformUpdated)
-		{
-			FTransform CurrentTransform = UpdatedComponent->GetComponentTransform();
-
-			FVector NewLocation = FMath::VInterpTo(CurrentTransform.GetLocation(), SimProxyTransform.GetLocation(), DeltaTime, SimProxyAlpha);
-			FRotator NewRotation = FMath::RInterpTo(CurrentTransform.GetRotation().Rotator(), SimProxyTransform.GetRotation().Rotator(), DeltaTime, SimProxyAlpha);
-			FTransform NewTransform(NewRotation, NewLocation, CurrentTransform.GetScale3D());
-
-			UpdatedComponent->SetWorldTransform(NewTransform);
-		}
+		SimulatedProxyMovement(DeltaTime);
 	}
 
 	// Prepearing move data to send to server
@@ -148,24 +136,15 @@ void UTankMovementComponent::UpdateVisual(float DeltaTime)
 
 		float AdaptiveInterpDuration = CorrectInterpDuration;
 
-		if (CurrentCorrectionDistance <= DistanceThresholdLow)
+		// Prevent recalculating of AdaptiveInterpDuration during continues interpolation. Calculates only on first tick of correction
+		if (!bIsCoorectionOngoing)
 		{
-			// Small correction, use longer/smoother duration
-			AdaptiveInterpDuration = MaxDuration;
-		}
-		else if (CurrentCorrectionDistance >= DistanceThresholdHigh)
-		{
-			// Large correction, use shorter duration
-			AdaptiveInterpDuration = MinDuration;
-		}
-		else
-		{
-			// Medium correction, scale duration inversely with distance
-			float DistanceRatio = (CurrentCorrectionDistance - DistanceThresholdLow) /
-				(DistanceThresholdHigh - DistanceThresholdLow);
+			const FVector2D InRange = FVector2D(DistanceThresholdLow, DistanceThresholdHigh);
+			const FVector2D OutRange = FVector2D(MaxDuration, MinDuration);
 
-			// Inverse mapping: higher distance = lower duration
-			AdaptiveInterpDuration = MaxDuration - DistanceRatio * (MaxDuration - MinDuration);
+			AdaptiveInterpDuration = FMath::GetMappedRangeValueClamped(InRange, OutRange, CurrentCorrectionDistance);
+
+			bIsCoorectionOngoing = true;
 		}
 
 		CorrectInterpTimeElapsded += DeltaTime;
@@ -184,6 +163,7 @@ void UTankMovementComponent::UpdateVisual(float DeltaTime)
 		if (Alpha >= 1.f)
 		{
 			bIsCorrectionActive = false;
+			bIsCoorectionOngoing = false;
 			CorrectInterpTimeElapsded = 0.f;
 		}
 	}
@@ -205,6 +185,31 @@ void UTankMovementComponent::UpdateVisual(float DeltaTime)
 void UTankMovementComponent::OnRep_SimProxyTransform()
 {
 	bIsSimProxyTransformUpdated = true;
+}
+
+void UTankMovementComponent::SimulatedProxyMovement(float DeltaTime)
+{
+	if (!TankOwner->HasAuthority() && !TankOwner->IsLocallyControlled())
+	{
+		FTransform CurrentTransform = UpdatedComponent->GetComponentTransform();
+		FVector CurrentLocation = CurrentTransform.GetLocation();
+		FRotator CurrentRotation = CurrentTransform.GetRotation().Rotator();
+
+		FVector NewLocation = FMath::VInterpTo(CurrentLocation, SimProxyTransform.GetLocation(), DeltaTime, SimProxyAlpha);
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, SimProxyTransform.GetRotation().Rotator(), DeltaTime, SimProxyAlpha);
+		FTransform NewTransform(NewRotation, NewLocation, CurrentTransform.GetScale3D());
+
+		UpdatedComponent->SetWorldTransform(NewTransform);
+		
+		bool bLocationEqual = CurrentLocation.Equals(NewLocation, 0.01f);
+		bool bRotationEqual = CurrentRotation.Equals(NewRotation, 0.01f);
+
+		// If actor performed necessary movement and rotation, disables calling for this function
+		if (bLocationEqual && bRotationEqual)
+		{
+			bIsSimProxyTransformUpdated = false;
+		}
+	}
 }
 
 void UTankMovementComponent::AddMoveInputVector(const FVector& WorldVector)
@@ -241,6 +246,12 @@ void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& Mov
 		Turn(MoveData.InputRotation);
 	}
 
+	// Checking for error after moving, and send correction if needed
+	CheckMovementError(MoveData);
+}
+
+void UTankMovementComponent::CheckMovementError(const FTankSafeMove& MoveData)
+{
 	// Checking for distance error, if not found, checking for rotation error
 	FVector ServerLocation = PawnOwner->GetActorLocation();
 	FVector ClientLocation = MoveData.SavedLocation;
@@ -255,6 +266,8 @@ void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& Mov
 
 	if (DistanceError >= CorrectionValue && (CurrentTime - LastCorrectionTime) > CorrectionCooldown)
 	{
+		// Sending corrections to client
+
 		LastCorrectionTime = CurrentTime;
 		Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
 		return;
@@ -274,9 +287,11 @@ void UTankMovementComponent::Server_Move_Implementation(const FTankSafeMove& Mov
 
 	if (AbsYawDiff > TurnCorrection || AbsPitchDiff > TurnCorrection || AbsRollDiff > TurnCorrection && (CurrentTime - LastCorrectionTime) > CorrectionCooldown)
 	{
-			LastCorrectionTime = CurrentTime;
-			Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
-			return;
+		// Sending corrections to client
+
+		LastCorrectionTime = CurrentTime;
+		Multicast_CorrectionData(UpdatedComponent->GetComponentTransform(), MoveData.TimeStamp);
+		return;
 	}
 }
 
@@ -310,6 +325,8 @@ void UTankMovementComponent::Multicast_CorrectionData_Implementation(const FTran
 			{
 				SlideAlongSurface(DesiredMovement, 1.0f - Hit.Time, Hit.Normal, Hit);
 			}
+
+			Turn(Move.InputRotation);
 		}
 
 		bIsCorrectionActive = true;

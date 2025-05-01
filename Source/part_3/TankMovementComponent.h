@@ -73,6 +73,8 @@ public:
 	UFUNCTION()
 	void OnRep_SimProxyTransform();
 
+	void SimulatedProxyMovement(float DeltaTime);
+
 	// Determines interpolation speed of SimProxyTransform (How fast replicated location applied)  
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Network|Replication")
 	float SimProxyAlpha = 10.f;
@@ -103,6 +105,8 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	void Server_Move(const FTankSafeMove& MoveData);
+
+	void CheckMovementError(const FTankSafeMove& MoveData);
 
 	UFUNCTION(NetMulticast, BlueprintCallable, Reliable)
 	void Multicast_CorrectionData(const FTransform& ServerTransform, float TimeStamp);
@@ -176,6 +180,8 @@ public:
 	bool bIsUpdateVisualActive = false;
 
 	bool bIsCorrectionActive = false;
+
+	bool bIsCoorectionOngoing = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Visual")
 	float VisualInterpolationSpeed = 6.f;
