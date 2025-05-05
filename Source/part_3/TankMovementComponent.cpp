@@ -26,6 +26,16 @@ void UTankMovementComponent::BeginPlay()
 	BodyVisualRotation = OwnerTransform.GetRotation();
 
 	bIsUpdateVisualActive = true;
+
+	// Adding line trace starting points from owner class
+	if (TankOwner)
+	{
+		Samples = { TankOwner->GroundSampleFL,
+					TankOwner->GroundSampleFR,
+					TankOwner->GroundSampleBL,
+					TankOwner->GroundSampleBR
+		};
+	}
 }
 
 void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -37,6 +47,9 @@ void UTankMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		return;
 	}
 	
+	// Applies gravitational pull and align tank to surface
+	SimpleGravity(DeltaTime);
+
 	if (TankOwner->HasAuthority() && !UpdatedComponent->GetComponentTransform().Equals(SimProxyTransform))
 	{
 		SimProxyTransform = UpdatedComponent->GetComponentTransform();
@@ -175,6 +188,7 @@ void UTankMovementComponent::UpdateVisual(float DeltaTime)
 
 		BodyVisualLocation = OwnerTransform.GetLocation();
 		BodyVisualRotation = OwnerTransform.GetRotation();
+		//BodyVisualRotation = AlignVisualRootToGround();
 
 		TankOwner->TankVisualRoot->SetWorldLocation(BodyVisualLocation);
 		TankOwner->TankVisualRoot->SetWorldRotation(BodyVisualRotation);
@@ -344,4 +358,88 @@ void UTankMovementComponent::Turn(float Amount)
 	//FRotator Rotation = FRotator(0.f, CurrentTurnAmount, 0.f);
 	TankOwner->AddActorLocalRotation(Rotation);
 	
+}
+
+FQuat UTankMovementComponent::AlignVisualRootToGround()
+{
+	if (!TankOwner || !TankOwner->TankVisualRoot) return FQuat::Identity;
+
+	if (Samples.Num() < 4) return TankOwner->GetActorQuat();
+
+	TArray<FVector> Normals;
+	Normals.Reserve(Samples.Num());
+
+	for (USceneComponent* Sample : Samples)
+	{
+		if (!Sample) continue;
+
+		FVector Start = Sample->GetComponentLocation();
+		FVector End = Start - FVector::UpVector * TraceDepth; // вниз на TraceDepth
+
+		FHitResult Hit;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(PawnOwner);
+
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+		{
+			Normals.Add(Hit.ImpactNormal);
+		}
+	}
+
+	FVector AvgNormal = FVector::UpVector;
+	if (Normals.Num() > 0)
+	{
+		AvgNormal = FVector::ZeroVector;
+		for (const FVector& N : Normals)
+		{
+			AvgNormal += N;
+		}
+		AvgNormal = AvgNormal.GetSafeNormal();
+	}
+
+	const FVector Forward = PawnOwner->GetActorForwardVector();
+	const FVector Right = FVector::CrossProduct(AvgNormal, Forward).GetSafeNormal();
+	const FVector SurfaceForward = FVector::CrossProduct(Right, AvgNormal).GetSafeNormal();
+
+	FMatrix RotationMatrix(SurfaceForward, Right, AvgNormal, FVector::ZeroVector);
+	return FQuat(RotationMatrix);
+}
+
+void UTankMovementComponent::SimpleGravity(float DeltaTime)
+{
+	const float GravityStrength = 980.f; // как в UE по умолчанию
+	FVector GravityVector = FVector(0, 0, -1) * GravityStrength * DeltaTime;
+
+	float TraceLength = TankOwner->CapsuleComponent->GetScaledCapsuleHalfHeight() + 15.f;
+
+	FVector Start = TankOwner->CapsuleComponent->GetComponentLocation();
+	FVector End = Start - FVector::UpVector * TraceLength;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(TankOwner);
+
+	FHitResult Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		//AlignVisualRootToGround();
+
+		FQuat ActorRotation = TankOwner->CapsuleComponent->GetComponentRotation().Quaternion();
+		FQuat TargetRotation = AlignVisualRootToGround();
+		FQuat NewRotation = FQuat::Slerp(ActorRotation, TargetRotation, DeltaTime * AlligmentSpeed);
+
+		TankOwner->CapsuleComponent->SetWorldRotation(NewRotation);
+	}
+	else
+	{
+		// Apply gravity pull 
+		UpdatedComponent->AddWorldOffset(GravityVector, true);
+
+		FQuat ActorRotation = TankOwner->CapsuleComponent->GetComponentRotation().Quaternion();
+		FQuat TargetRotation = AlignVisualRootToGround();
+		FQuat NewRotation = FQuat::Slerp(ActorRotation, TargetRotation, DeltaTime * AlligmentSpeed);
+
+		TankOwner->CapsuleComponent->SetWorldRotation(NewRotation);
+		//FHitResult Hit;
+		//MoveComponent(GravityVector, UpdatedComponent->GetComponentQuat(), true, &Hit);
+	}
 }

@@ -14,6 +14,18 @@ ATankPawn::ATankPawn() : Super()
 	BaseMesh->SetupAttachment(TankVisualRoot);
 	TurretMesh->SetupAttachment(TankVisualRoot);
 
+	GroundSampleFL = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleFL"));
+	GroundSampleFL->SetupAttachment(TankVisualRoot);
+
+	GroundSampleFR = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleFR"));
+	GroundSampleFR->SetupAttachment(TankVisualRoot);
+
+	GroundSampleBL = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleBL"));
+	GroundSampleBL->SetupAttachment(TankVisualRoot);
+
+	GroundSampleBR = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleBR"));
+	GroundSampleBR->SetupAttachment(TankVisualRoot);
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	//SpringArm->SetupAttachment(CapsuleComponent);
 	SpringArm->SetupAttachment(TankVisualRoot);

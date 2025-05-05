@@ -50,6 +50,21 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USceneComponent> TankVisualRoot;
+
+	// List of components used to calculate line trace for proper tank hull to surface alignment
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleFL;  // Front Left
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleFR;  // Front Right
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleBL;  // Back Left
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleBR;  // Back Right
+
 	//**************************************************************************
 
 

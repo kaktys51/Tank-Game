@@ -190,4 +190,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void UpdateVisual(float DeltaTime);
 
+	// Trace depth for aligning of tank to surface
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
+	float TraceDepth = 200.f;
+
+	// Gravity Linetrace leght = is Capsule Half Height + margin. May be increased for mounted terrains 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
+	float GravityLineTraseMargin = 10.f;
+
+	// Determines speed of surface alignment
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
+	float AlligmentSpeed = 3.f;
+
+	// Contains all points for line trace from owner class
+	TArray<USceneComponent*> Samples;
+
+	FQuat AlignVisualRootToGround();
+
+	void SimpleGravity(float DeltaTime);
 };
