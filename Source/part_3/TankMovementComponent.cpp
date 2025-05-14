@@ -188,7 +188,6 @@ void UTankMovementComponent::UpdateVisual(float DeltaTime)
 
 		BodyVisualLocation = OwnerTransform.GetLocation();
 		BodyVisualRotation = OwnerTransform.GetRotation();
-		//BodyVisualRotation = AlignVisualRootToGround();
 
 		TankOwner->TankVisualRoot->SetWorldLocation(BodyVisualLocation);
 		TankOwner->TankVisualRoot->SetWorldRotation(BodyVisualRotation);
