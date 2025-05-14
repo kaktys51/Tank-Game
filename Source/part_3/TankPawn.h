@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "PlayerTeams_Enum.h"
 #include "InputActionValue.h"
+#include "TankMovementComponent.h"
 #include "TankPawn.generated.h"
 
 UCLASS()
@@ -39,6 +40,33 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	TObjectPtr<UTankMovementComponent> MovementComponent;
+
+
+	//**************************************************************************
+	// 
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+	TObjectPtr<USceneComponent> TankVisualRoot;
+
+	// List of components used to calculate line trace for proper tank hull to surface alignment
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleFL;  // Front Left
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleFR;  // Front Right
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleBL;  // Back Left
+
+	UPROPERTY(EditInstanceOnly, Category = "Tank|GroundAlignment")
+	TObjectPtr<USceneComponent> GroundSampleBR;  // Back Right
+
+	//**************************************************************************
+
 
 	//Timer for handle reload
 	FTimerHandle ReloadTimer;
@@ -75,6 +103,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
 	void Fire();
+
+	// New movemnt from Component 
+
+	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
+	void MoveComp(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Tank Actions")
+	void TurnComp(float Amount);
 
 	//Server movement RPC
 

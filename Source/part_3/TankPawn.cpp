@@ -7,13 +7,34 @@ ATankPawn::ATankPawn() : Super()
 {
 
 	bReplicates = true;
-	SetReplicateMovement(true);
+	SetReplicateMovement(false);
+
+	TankVisualRoot = CreateDefaultSubobject<USceneComponent>(TEXT("TankVisualRoot"));
+
+	BaseMesh->SetupAttachment(TankVisualRoot);
+	TurretMesh->SetupAttachment(TankVisualRoot);
+
+	GroundSampleFL = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleFL"));
+	GroundSampleFL->SetupAttachment(TankVisualRoot);
+
+	GroundSampleFR = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleFR"));
+	GroundSampleFR->SetupAttachment(TankVisualRoot);
+
+	GroundSampleBL = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleBL"));
+	GroundSampleBL->SetupAttachment(TankVisualRoot);
+
+	GroundSampleBR = CreateDefaultSubobject<USceneComponent>(TEXT("GroundSampleBR"));
+	GroundSampleBR->SetupAttachment(TankVisualRoot);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(CapsuleComponent);
+	//SpringArm->SetupAttachment(CapsuleComponent);
+	SpringArm->SetupAttachment(TankVisualRoot);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	MovementComponent = CreateDefaultSubobject<UTankMovementComponent>(TEXT("TankMovementComponent"));
+	MovementComponent->UpdatedComponent = CapsuleComponent;
 
 	bTurretToCursorState = true;
 
@@ -36,17 +57,45 @@ void ATankPawn::BeginPlay()
 			DynamicTeamColor->SetVectorParameterValue(MaterialParametrs, MaterialColor);
 		}
 	}
+
+	// Setting up VisualRoot to ActorRoot when game starting 
+	TankVisualRoot->SetWorldTransform(GetTransform());
 }
 
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ATankPawn, MovementComponent);
 	DOREPLIFETIME(ATankPawn, bTurretToCursorState);
 	DOREPLIFETIME(ATankPawn, bGunLoaded);
 	DOREPLIFETIME(ATankPawn, PawnTeam);
 	DOREPLIFETIME_CONDITION(ATankPawn, SimTankVelocity, COND_SimulatedOnly);
 }
+
+void ATankPawn::MoveComp(float Amount)
+{
+	/*if (MovementComponent)
+	{
+		MovementComponent->TankOwner;
+		MovementComponent->Move(Amount);
+	}*/
+
+	if (MovementComponent)
+	{
+		FVector ForvardVector = CapsuleComponent->GetForwardVector();
+		MovementComponent->AddMoveInputVector(ForvardVector * Amount);
+	}
+}
+
+void ATankPawn::TurnComp(float Amount)
+{
+	if (MovementComponent)
+	{
+		MovementComponent->AddTurnValue(Amount);
+	}
+}
+
 
 void ATankPawn::Move(float Amount)
 {
@@ -231,15 +280,17 @@ void ATankPawn::Tick(float DeltaTime)
 	FVector ProjetileSpawnLocation = ProjectileSpawnPointFox->GetComponentLocation();
 	DrawDebugSphere(GetWorld(), ProjetileSpawnLocation, 70.f, 12, FColor::Red);
 
-	if (!bMoveInputActive && FMath::Abs(CurrentMoveAmount) > 0.1f)
-	{
-		CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, 0.0f, DeltaTime, AccelerationDuration);
-	}
-	bMoveInputActive = false;
+	// off until tankMovementComponent !!!!!!
+	// 
+	//if (!bMoveInputActive && FMath::Abs(CurrentMoveAmount) > 0.1f)
+	//{
+	//	CurrentMoveAmount = FMath::FInterpTo(CurrentMoveAmount, 0.0f, DeltaTime, AccelerationDuration);
+	//}
+	//bMoveInputActive = false;
 
-	if (!bTurnInputActive && FMath::Abs(CurrentTurnAmount) != 0.1f)
-	{
-		CurrentTurnAmount = 0.f;
-	}
-	bTurnInputActive = false;
+	//if (!bTurnInputActive && FMath::Abs(CurrentTurnAmount) != 0.1f)
+	//{
+	//	CurrentTurnAmount = 0.f;
+	//}
+	//bTurnInputActive = false;
 }
