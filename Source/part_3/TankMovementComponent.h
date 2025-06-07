@@ -194,13 +194,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
 	float TraceDepth = 200.f;
 
-	// Gravity Linetrace leght = is Capsule Half Height + margin. May be increased for mounted terrains 
+	// Gravity Linetrace leght = is Capsule Half Height + margin (this). May be increased for mounted terrains 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
 	float GravityLineTraseMargin = 10.f;
 
 	// Determines speed of surface alignment
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
 	float AlligmentSpeed = 3.f;
+
+	// Actual falling speed. Used for SimplaGravity logic
+	UPROPERTY(BlueprintReadOnly, Category = "Movement|Physics")
+	float FallingSpeed = 0.f;
+
+	// Aceleration of falling actor
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
+	float GravityAccel = 980.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
+	float MaxFallSpeed = 3000.f;
 
 	// Contains all points for line trace from owner class
 	TArray<USceneComponent*> Samples;

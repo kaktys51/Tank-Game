@@ -409,7 +409,7 @@ void UTankMovementComponent::SimpleGravity(float DeltaTime)
 	const float GravityStrength = 980.f; // как в UE по умолчанию
 	FVector GravityVector = FVector(0, 0, -1) * GravityStrength * DeltaTime;
 
-	float TraceLength = TankOwner->CapsuleComponent->GetScaledCapsuleHalfHeight() + 15.f;
+	float TraceLength = TankOwner->CapsuleComponent->GetScaledCapsuleHalfHeight() + GravityLineTraseMargin;
 
 	FVector Start = TankOwner->CapsuleComponent->GetComponentLocation();
 	FVector End = Start - FVector::UpVector * TraceLength;
@@ -422,6 +422,9 @@ void UTankMovementComponent::SimpleGravity(float DeltaTime)
 	{
 		//AlignVisualRootToGround();
 
+		// If on ground, clear falling speed
+		FallingSpeed = 0.f;
+
 		FQuat ActorRotation = TankOwner->CapsuleComponent->GetComponentRotation().Quaternion();
 		FQuat TargetRotation = AlignVisualRootToGround();
 		FQuat NewRotation = FQuat::Slerp(ActorRotation, TargetRotation, DeltaTime * AlligmentSpeed);
@@ -430,8 +433,12 @@ void UTankMovementComponent::SimpleGravity(float DeltaTime)
 	}
 	else
 	{
+
+		FallingSpeed = FMath::Clamp(FallingSpeed + GravityAccel * DeltaTime, 0.f, MaxFallSpeed);
+
 		// Apply gravity pull 
-		UpdatedComponent->AddWorldOffset(GravityVector, true);
+		FVector GravityStep = FVector(0.f, 0.f, -1.f) * FallingSpeed * DeltaTime;
+		UpdatedComponent->AddWorldOffset(GravityStep, true);
 
 		FQuat ActorRotation = TankOwner->CapsuleComponent->GetComponentRotation().Quaternion();
 		FQuat TargetRotation = AlignVisualRootToGround();
