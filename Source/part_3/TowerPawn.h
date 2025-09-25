@@ -35,6 +35,17 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 	TObjectPtr<USphereComponent> DetectionSphere;
 
+	FTimerHandle LoseSightTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensing")
+	float LoseSightTime = 1.5f;
+
+	UFUNCTION(BlueprintCallable, Category = "Sensing")
+	void RestartLossSightTimer();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Sensing")
+	void LoseSight();
+
 	UPROPERTY(BlueprintReadOnly, Category = "Tank Actions")
 	bool bGunLoaded = true;
 

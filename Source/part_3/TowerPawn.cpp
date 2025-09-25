@@ -37,6 +37,12 @@ void ATowerPawn::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 	}*/
 }
 
+void ATowerPawn::RestartLossSightTimer()
+{
+	GetWorldTimerManager().ClearTimer(LoseSightTimer);
+	GetWorldTimerManager().SetTimer(LoseSightTimer, this, &ATowerPawn::LoseSight, LoseSightTime, false);
+}
+
 void ATowerPawn::ReloadGun()
 {
 	bGunLoaded = true;
