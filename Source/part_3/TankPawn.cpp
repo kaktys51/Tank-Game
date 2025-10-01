@@ -181,6 +181,7 @@ void ATankPawn::Fire()
 
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 			Projectile->SetOwnerTeam(PawnTeam);
+			Projectile->SetDamageValue(DamageValue);
 
 			MulticastFireVSFX();
 			//FireVSFX();

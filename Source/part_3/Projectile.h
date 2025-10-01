@@ -47,6 +47,9 @@ public:
 	UFUNCTION()
 	void SetOwnerTeam(ETeam TeamValue);
 
+	UFUNCTION()
+	void SetDamageValue(float Damage);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UParticleSystem* HitEffect;
 

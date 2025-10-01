@@ -72,6 +72,9 @@ public:
 	FTimerHandle ReloadTimer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tank Actions")
+	float DamageValue = 20.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tank Actions")
 	float ReloadTime = 2.f;
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Tank Actions")

@@ -30,6 +30,11 @@ void AProjectile::SetOwnerTeam(ETeam TeamValue)
 	OwnerTeam = TeamValue;
 }
 
+void AProjectile::SetDamageValue(float Damage)
+{
+	DamageValue = Damage;
+}
+
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
