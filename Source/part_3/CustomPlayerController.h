@@ -55,7 +55,11 @@ public:
 	void SetPawnTeam(ATankPawn* PlayerTank);
 
 	//Set new ready status in pre game widget
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerSetReady(bool bNewReady);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void RecivedPlayerState(APlayerStateFox* NewPlayerState);
+
+	virtual void OnRep_PlayerState() override;
 };

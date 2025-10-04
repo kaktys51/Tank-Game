@@ -4,10 +4,12 @@
 #include <Kismet/GameplayStatics.h>
 #include "TimerManager.h"
 #include "CustomPlayerController.h"
+#include "PlayerStateFox.h"
 
 AGameModeBaseFox::AGameModeBaseFox()
 {
 	DefaultPawnClass = nullptr;
+	PlayerStateClass = APlayerStateFox::StaticClass();
 
 	RestartDelay = 5;
 	WinScore = 1;

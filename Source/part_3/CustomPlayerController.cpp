@@ -3,6 +3,7 @@
 #include "CustomPlayerController.h"
 #include "TankPawn.h"
 #include "GameModeBaseFox.h"
+#include "PlayerStateFox.h"
 
 ACustomPlayerController::ACustomPlayerController()
 {
@@ -63,6 +64,11 @@ void ACustomPlayerController::SwitchTeam(int32 NewTeam)
 			SetPawnTeam(PlayerTank);
 		}
 	}
+	//Changing Team in PlayerState
+	if (APlayerStateFox* CustomPS = GetPlayerState<APlayerStateFox>())
+	{
+		CustomPS->ServerSetTeam(NewTeam);
+	}
 }
 
 void ACustomPlayerController::ServerSwitchTeam_Implementation(int32 NewTeam)
@@ -81,6 +87,12 @@ void ACustomPlayerController::ServerSwitchTeam_Implementation(int32 NewTeam)
 			SetPawnTeam(PlayerTank);
 		}
 	}
+
+	//Changing Team in PlayerState
+	if (APlayerStateFox* CustomPS = GetPlayerState<APlayerStateFox>())
+	{
+		CustomPS->ServerSetTeam(NewTeam);
+	}
 }
 
 ETeam ACustomPlayerController::GetPlayerTeam()
@@ -97,8 +109,22 @@ void ACustomPlayerController::SetPawnTeam(ATankPawn* PlayerTank)
 	}
 }
 
+void ACustomPlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (APlayerStateFox* MyState = GetPlayerState<APlayerStateFox>())
+	{
+		RecivedPlayerState(MyState);
+	}
+}
+
 void ACustomPlayerController::ServerSetReady_Implementation(bool bNewReady)
 {
-	bIsReady = bNewReady;
-	GetWorld()->GetAuthGameMode<AGameModeBaseFox>()->CheckAllPlayersReady();
+	//bIsReady = bNewReady;
+	if (APlayerStateFox* CustomPS = GetPlayerState<APlayerStateFox>())
+	{
+		CustomPS->ServerSetReady(bNewReady);
+		GetWorld()->GetAuthGameMode<AGameModeBaseFox>()->CheckAllPlayersReady();
+	}	
 }
