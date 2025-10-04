@@ -3,6 +3,7 @@
 #include "TankPawn.h"
 #include <Kismet/GameplayStatics.h>
 #include "TimerManager.h"
+#include "CustomPlayerController.h"
 
 AGameModeBaseFox::AGameModeBaseFox()
 {
@@ -61,4 +62,38 @@ int32 AGameModeBaseFox::GetCurrentScore()
 int32 AGameModeBaseFox::GetWinScore()
 {
 	return WinScore;
+}
+
+void AGameModeBaseFox::SpawnActorsByTeam(const TArray<APlayerController*>& PlayerControllers)
+{
+	for (APlayerController* BaseController : PlayerControllers)
+	{
+		if (ACustomPlayerController* CustomController = Cast<ACustomPlayerController>(BaseController))
+		{
+			ATankPawn* NewPlayerTank = nullptr;
+
+			if (CustomController->GetPlayerTeam() == ETeam::Green)
+			{
+				AActor* StartSpot = FindPlayerStart(CustomController, SpawnTagGreenTeam);
+
+				NewPlayerTank = GetWorld()->SpawnActor<ATankPawn>(TankPawnClass,
+					StartSpot->GetActorLocation(), 
+					StartSpot->GetActorRotation());
+			}
+			else if (CustomController->GetPlayerTeam() == ETeam::Blue)
+			{
+				AActor* StartSpot = FindPlayerStart(CustomController, SpawnTagBlueTeam);
+
+				NewPlayerTank = GetWorld()->SpawnActor<ATankPawn>(TankPawnClass,
+					StartSpot->GetActorLocation(),
+					StartSpot->GetActorRotation());
+			}
+
+			if (NewPlayerTank)
+			{
+				CustomController->Possess(NewPlayerTank);
+			}
+		}
+		
+	}
 }

@@ -2,6 +2,7 @@
 
 #include "CustomPlayerController.h"
 #include "TankPawn.h"
+#include "GameModeBaseFox.h"
 
 ACustomPlayerController::ACustomPlayerController()
 {
@@ -94,4 +95,10 @@ void ACustomPlayerController::SetPawnTeam(ATankPawn* PlayerTank)
 	{		
 		PlayerTank->SetTeamSettings(GetTeamColor(PlayerTeam), PlayerTeam);
 	}
+}
+
+void ACustomPlayerController::ServerSetReady_Implementation(bool bNewReady)
+{
+	bIsReady = bNewReady;
+	GetWorld()->GetAuthGameMode<AGameModeBaseFox>()->CheckAllPlayersReady();
 }

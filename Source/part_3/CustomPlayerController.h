@@ -23,6 +23,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
 	ETeam PlayerTeam;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pre Game")
+	bool bIsReady = false;
+
 public:
 
 	//Data Asset that contains team colors, setting up in editor
@@ -50,5 +53,9 @@ public:
 	//applies color for Team Material on tank
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	void SetPawnTeam(ATankPawn* PlayerTank);
+
+	//Set new ready status in pre game widget
+	UFUNCTION(Server, Reliable)
+	void ServerSetReady(bool bNewReady);
 
 };

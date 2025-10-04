@@ -29,6 +29,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Rules")
 	int32 ScorePerKill;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	TSubclassOf<ATankPawn> TankPawnClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Rules")
+	bool bIsPreGameState = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	FString SpawnTagGreenTeam = TEXT("Green0");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	FString SpawnTagBlueTeam = TEXT("Blue0");
+
 private:
 
 	FTimerHandle RestartTimerHandle;
@@ -62,4 +74,11 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Events")
 	void GameWin();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Pre Game")
+	void CheckAllPlayersReady();
+
+	UFUNCTION(BlueprintCallable, Category = "Game Start")
+	void SpawnActorsByTeam(const TArray<APlayerController*>& PlayerControllers);
+
 };
